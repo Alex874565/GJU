@@ -6,6 +6,7 @@ public class PlayerLook : MonoBehaviour
     [SerializeField] private Transform yawPivot;
     [SerializeField] private Transform pitchPivot;
     [SerializeField] private Transform bodyVisual;
+    [SerializeField] private Transform lantern;
     [SerializeField] private Rigidbody rb;
 
     [Header("Settings")]
@@ -54,10 +55,18 @@ public class PlayerLook : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Visual matches body smoothly (optional extra smoothing)
+        // Body follows rigidbody (yaw only)
         bodyVisual.rotation = Quaternion.Slerp(
             bodyVisual.rotation,
             rb.rotation,
+            bodyFollowSpeed * Time.deltaTime
+        );
+
+        Quaternion targetRotation = Quaternion.Euler(pitch, 0f, 0f);
+
+        lantern.localRotation = Quaternion.Slerp(
+            lantern.localRotation,
+            targetRotation,
             bodyFollowSpeed * Time.deltaTime
         );
     }
