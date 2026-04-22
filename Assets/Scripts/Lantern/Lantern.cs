@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class LanternBatteryFlicker : MonoBehaviour
+public class Lantern : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Light lanternLight;
@@ -8,6 +8,7 @@ public class LanternBatteryFlicker : MonoBehaviour
     [Header("Battery")]
     [Range(0f, 1f)]
     [SerializeField] private float battery01 = 1f;
+    [SerializeField] private float batteryDecay = .05f;
     [SerializeField] private float lowBatteryThreshold = 0.35f;
     [SerializeField] private float criticalBatteryThreshold = 0.15f;
 
@@ -47,7 +48,7 @@ public class LanternBatteryFlicker : MonoBehaviour
 
     private void Update()
     {
-        battery01 = Mathf.Clamp01(battery01);
+        SetBattery01(battery01 - batteryDecay * Time.deltaTime);
 
         UpdateBaseIntensity();
         UpdateEpisodeState();
@@ -149,5 +150,10 @@ public class LanternBatteryFlicker : MonoBehaviour
     public void SetBattery01(float value)
     {
         battery01 = Mathf.Clamp01(value);
+    }
+
+    public void AddBattery(float value)
+    {
+        SetBattery01(battery01 + value);
     }
 }

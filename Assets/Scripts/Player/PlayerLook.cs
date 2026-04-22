@@ -2,14 +2,16 @@
 
 public class PlayerLook : MonoBehaviour
 {
-    [Header("References")]
+    [Header("References")] 
+    [SerializeField] private Camera camera;
     [SerializeField] private Transform yawPivot;
     [SerializeField] private Transform pitchPivot;
     [SerializeField] private Transform bodyVisual;
     [SerializeField] private Transform lantern;
     [SerializeField] private Rigidbody rb;
 
-    [Header("Settings")]
+    [Header("Settings")] 
+    [SerializeField] private float lanternAimDistance = 10f;
     [SerializeField] private float sensitivity = 0.1f;
     [SerializeField] private float minPitch = -80f;
     [SerializeField] private float maxPitch = 80f;
@@ -55,18 +57,21 @@ public class PlayerLook : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Body follows rigidbody (yaw only)
         bodyVisual.rotation = Quaternion.Slerp(
             bodyVisual.rotation,
             rb.rotation,
             bodyFollowSpeed * Time.deltaTime
         );
 
-        Quaternion targetRotation = Quaternion.Euler(pitch, 0f, 0f);
+        Ray ray = camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Vector3 targetPoint = ray.origin + ray.direction * lanternAimDistance;
 
-        lantern.localRotation = Quaternion.Slerp(
-            lantern.localRotation,
-            targetRotation,
+        Vector3 dir = (targetPoint - lantern.position).normalized;
+        Quaternion targetRot = Quaternion.LookRotation(dir);
+
+        lantern.rotation = Quaternion.Slerp(
+            lantern.rotation,
+            targetRot,
             bodyFollowSpeed * Time.deltaTime
         );
     }
