@@ -29,6 +29,8 @@ public class PlayerManager : MonoBehaviour
     public float Anxiety => currentAnxiety;
     public float Anxiety01 => currentAnxiety / 100f;
     public float Fear01 => currentFear;
+    
+    public bool IsHidden { get; private set; }
 
     private void Start()
     {
@@ -77,6 +79,12 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
+    public void AddAnxiety(float amount)
+    {
+        currentAnxiety += amount;
+        currentAnxiety = Mathf.Clamp(currentAnxiety, 0f, 100f);
+    }
+    
     // ------------------------
     // FEAR (TEMPORARY)
     // ------------------------
