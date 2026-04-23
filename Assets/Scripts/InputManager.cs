@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,10 +10,13 @@ public class InputManager : MonoBehaviour
     
     private InputAction movementAction;
     private InputAction lookAction;
+    private InputAction clickAction;
 
     public Vector2 Movement { get; private set; }
     public Vector2 Look { get; private set; }
 
+    public event Action OnClickPressed;
+    
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -27,6 +31,8 @@ public class InputManager : MonoBehaviour
     {
         movementAction = playerInput.actions["Move"];
         lookAction = playerInput.actions["Look"];
+        clickAction = playerInput.actions["Attack"];
+        clickAction.performed += ctx => OnClickPressed?.Invoke();
     }
 
     private void Update()

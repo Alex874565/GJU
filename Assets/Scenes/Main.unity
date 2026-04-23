@@ -688,7 +688,7 @@ MonoBehaviour:
   lantern: {fileID: 2078258807}
   playerCamera: {fileID: 330585545}
   interactDistance: 3
-  sphereRadius: 0.3
+  sphereRadius: 0.4
   interactMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -1534,13 +1534,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lanternLight: {fileID: 2078258805}
-  battery01: 1
-  batteryDecay: 0.0055555557
+  maxBatteries: 3
+  batteryDuration: 30
   lowBatteryThreshold: 0.5
   criticalBatteryThreshold: 0.25
   normalIntensity: 100
   lowBatteryIntensity: 70
   criticalBatteryIntensity: 60
+  emptyIntensity: 8
   lowBatteryEpisodeChancePerSecond: 0.15
   criticalEpisodeChancePerSecond: 0.8
   episodeDurationRange: {x: 0.15, y: 0.6}

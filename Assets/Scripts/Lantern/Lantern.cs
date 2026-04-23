@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Lantern : MonoBehaviour
 {
@@ -6,9 +8,8 @@ public class Lantern : MonoBehaviour
     [SerializeField] private Light lanternLight;
 
     [Header("Battery")]
-    [Range(0f, 1f)]
-    [SerializeField] private float battery01 = 1f;
-    [SerializeField] private float batteryDecay = .05f;
+    [SerializeField] private int maxBatteries = 3;
+    [SerializeField] private float batteryDuration = 30f;
     [SerializeField] private float lowBatteryThreshold = 0.35f;
     [SerializeField] private float criticalBatteryThreshold = 0.15f;
 
@@ -16,6 +17,7 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float normalIntensity = 400f;
     [SerializeField] private float lowBatteryIntensity = 300f;
     [SerializeField] private float criticalBatteryIntensity = 200f;
+    [SerializeField] private float emptyIntensity = 8f;
 
     [Header("Flicker Episodes")]
     [SerializeField] private float lowBatteryEpisodeChancePerSecond = 0.15f;
@@ -31,6 +33,9 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float criticalNoiseAmount = 0.08f;
     [SerializeField] private float noiseSpeed = 14f;
 
+    private int currentBatteries;
+    private float currentBatteryTime;
+
     private float baseIntensity;
     private float currentMultiplier = 1f;
 
@@ -41,22 +46,65 @@ public class Lantern : MonoBehaviour
 
     private float noiseSeed;
 
+    public event Action OnLanternTurnedOff;
+    public event Action OnLanternTurnedOn;
+
     private void Start()
     {
         noiseSeed = Random.Range(0f, 1000f);
+
+        currentBatteries = maxBatteries;
+        currentBatteryTime = batteryDuration;
     }
 
     private void Update()
     {
-        SetBattery01(battery01 - batteryDecay * Time.deltaTime);
+        UpdateBattery();
 
-        UpdateBaseIntensity();
-        UpdateEpisodeState();
-        UpdateNoise();
+        float battery01 = GetBattery01();
+
+        UpdateBaseIntensity(battery01);
+        UpdateEpisodeState(battery01);
+        UpdateNoise(battery01);
         ApplyLight();
     }
 
-    private void UpdateBaseIntensity()
+    private void UpdateBattery()
+    {
+        if (currentBatteries <= 0)
+            return;
+
+        currentBatteryTime -= Time.deltaTime;
+
+        while (currentBatteryTime <= 0f && currentBatteries > 0)
+        {
+            currentBatteries--;
+
+            if (currentBatteries > 0)
+            {
+                currentBatteryTime += batteryDuration;
+            }
+            else
+            {
+                OnLanternTurnedOff?.Invoke();
+                currentBatteryTime = 0f;
+                break;
+            }
+        }
+    }
+
+    private float GetBattery01()
+    {
+        float totalTime = maxBatteries * batteryDuration;
+        float remainingTime = Mathf.Max(0, (currentBatteries - 1) * batteryDuration + currentBatteryTime);
+
+        if (currentBatteries <= 0)
+            remainingTime = 0f;
+
+        return totalTime > 0f ? remainingTime / totalTime : 0f;
+    }
+
+    private void UpdateBaseIntensity(float battery01)
     {
         if (battery01 > lowBatteryThreshold)
         {
@@ -72,10 +120,10 @@ public class Lantern : MonoBehaviour
         }
 
         float ct = Mathf.InverseLerp(criticalBatteryThreshold, 0f, battery01);
-        baseIntensity = Mathf.Lerp(criticalBatteryIntensity, 8f, ct);
+        baseIntensity = Mathf.Lerp(criticalBatteryIntensity, emptyIntensity, ct);
     }
 
-    private void UpdateEpisodeState()
+    private void UpdateEpisodeState(float battery01)
     {
         if (battery01 > lowBatteryThreshold)
         {
@@ -126,7 +174,7 @@ public class Lantern : MonoBehaviour
         currentMultiplier = Mathf.Lerp(currentMultiplier, targetMultiplier, responseSpeed * Time.deltaTime);
     }
 
-    private void UpdateNoise()
+    private void UpdateNoise(float battery01)
     {
         if (battery01 > lowBatteryThreshold)
             return;
@@ -147,13 +195,32 @@ public class Lantern : MonoBehaviour
         lanternLight.intensity = baseIntensity * currentMultiplier;
     }
 
-    public void SetBattery01(float value)
+    public void AddBattery(int amount)
     {
-        battery01 = Mathf.Clamp01(value);
+        if (amount <= 0)
+            return;
+        
+        if(currentBatteries <= 0)
+            OnLanternTurnedOn?.Invoke();
+
+        currentBatteries = Mathf.Clamp(currentBatteries + amount, 0, maxBatteries);
+
+        if (currentBatteries > 0 && currentBatteryTime <= 0f)
+            currentBatteryTime = batteryDuration;
     }
 
-    public void AddBattery(float value)
+    public int GetCurrentBatteries()
     {
-        SetBattery01(battery01 + value);
+        return currentBatteries;
+    }
+
+    public float GetCurrentBatteryTime01()
+    {
+        return batteryDuration > 0f ? currentBatteryTime / batteryDuration : 0f;
+    }
+
+    public float GetTotalBattery01()
+    {
+        return GetBattery01();
     }
 }

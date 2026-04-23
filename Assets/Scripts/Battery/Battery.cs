@@ -2,32 +2,56 @@
 
 public class Battery : MonoBehaviour, IInteractable
 {
-    [SerializeField] private float liftHeight = 0.25f;
-    [SerializeField] private float speed = 5f;
+    [Header("References")]
+    [SerializeField] private Transform visual;
 
-    private Vector3 basePosition;
-    private Vector3 targetPosition;
+    [Header("Lift")]
+    [SerializeField] private float liftHeight = 0.25f;
+    [SerializeField] private float moveSpeed = 5f;
+
+    [Header("Float")]
+    [SerializeField] private float floatAmplitude = 0.05f;
+    [SerializeField] private float floatFrequency = 2f;
+
+    [Header("Rotation")]
+    [SerializeField] private float rotationSpeed = 90f;
+
+    private Vector3 visualBaseLocalPos;
+    private bool isHighlighted;
+    private float floatTimer;
 
     private void Awake()
     {
-        basePosition = transform.position;
-        targetPosition = basePosition;
+        if (visual == null)
+            visual = transform;
+
+        visualBaseLocalPos = visual.localPosition;
     }
 
     private void Update()
     {
-        transform.position = Vector3.Lerp(
-            transform.position,
-            targetPosition,
-            speed * Time.deltaTime
+        Vector3 targetLocalPos = visualBaseLocalPos;
+
+        if (isHighlighted)
+        {
+            floatTimer += Time.deltaTime * floatFrequency;
+
+            float floatOffset = Mathf.Sin(floatTimer) * floatAmplitude;
+            targetLocalPos += Vector3.up * (liftHeight + floatOffset);
+
+            visual.Rotate(Vector3.up * rotationSpeed * Time.deltaTime, Space.Self);
+        }
+
+        visual.localPosition = Vector3.Lerp(
+            visual.localPosition,
+            targetLocalPos,
+            moveSpeed * Time.deltaTime
         );
     }
 
     public void ChangeHighlight(bool highlighted)
     {
-        targetPosition = highlighted
-            ? basePosition + Vector3.up * liftHeight
-            : basePosition;
+        isHighlighted = highlighted;
     }
 
     public void Interact(PlayerInteract player)
