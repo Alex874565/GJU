@@ -12,6 +12,11 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Image borderTop;
     public Image borderBottom;
 
+    [Header("Settings")]
+    public SettingsPanel settingsPanel;
+    public ButtonFlicker buttonFlicker;
+    public bool isBack = false;
+
     [Header("Audio")]
     public AudioSource audioSource;
     public AudioClip buttonPressClip;
@@ -72,8 +77,29 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
             return;
         }
 
+        if (isBack && settingsPanel != null)
+        {
+            StartCoroutine(FlickerThenAction(() => settingsPanel.CloseSettings()));
+            return;
+        }
+
+        if (settingsPanel != null && !isBack)
+        {
+            StartCoroutine(FlickerThenAction(() => settingsPanel.OpenSettings()));
+            return;
+        }
+
         if (!string.IsNullOrEmpty(sceneToLoad))
             StartCoroutine(LoadSceneWithDelay());
+    }
+
+    IEnumerator FlickerThenAction(System.Action action)
+    {
+        float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
+        yield return new WaitForSeconds(clipLength);
+        if (buttonFlicker != null)
+            yield return StartCoroutine(buttonFlicker.DoFlicker());
+        action?.Invoke();
     }
 
     IEnumerator AnimateHover(bool entering)
