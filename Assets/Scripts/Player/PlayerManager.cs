@@ -9,6 +9,11 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float anxietyGainDarkness = 8f;
     [SerializeField] private float anxietyGainEncounter = 6f;
     [SerializeField] private float anxietyGainSeeingMonster = 15f;
+    [SerializeField] private float anxietyDecay = 3f;
+
+    [Header("Darkness Delay")]
+    [SerializeField] private float darknessGraceTime = 3f;
+    private float darknessTimer = 0f;
 
     [Range(0f, 100f)]
     [SerializeField] private float currentAnxiety = 0f;
@@ -57,14 +62,22 @@ public class PlayerManager : MonoBehaviour
     }
 
     // ------------------------
-    // ANXIETY (NO DECAY)
+    // ANXIETY (WITH DECAY)
     // ------------------------
     private void UpdateAnxiety()
     {
         float gain = 0f;
 
         if (lanternOff || lightsOff)
-            gain += anxietyGainDarkness;
+        {
+            darknessTimer += Time.deltaTime;
+            if (darknessTimer >= darknessGraceTime)
+                gain += anxietyGainDarkness;
+        }
+        else
+        {
+            darknessTimer = 0f;
+        }
 
         if (inEncounter)
             gain += anxietyGainEncounter;
@@ -75,6 +88,11 @@ public class PlayerManager : MonoBehaviour
         if (gain > 0f)
         {
             currentAnxiety += gain * Time.deltaTime;
+            currentAnxiety = Mathf.Clamp(currentAnxiety, 0f, 100f);
+        }
+        else
+        {
+            currentAnxiety -= anxietyDecay * Time.deltaTime;
             currentAnxiety = Mathf.Clamp(currentAnxiety, 0f, 100f);
         }
     }
@@ -169,5 +187,6 @@ public class PlayerManager : MonoBehaviour
         inEncounter = false;
         lightsOff = false;
         lanternOff = false;
+        darknessTimer = 0f;
     }
 }

@@ -12,6 +12,11 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public Image borderTop;
     public Image borderBottom;
 
+    [Header("Pause")]
+    public PauseMenu pauseMenu;
+    public bool isResume = false;
+    public bool isQuitToMenu = false;
+
     [Header("Settings")]
     public SettingsPanel settingsPanel;
     public ButtonFlicker buttonFlicker;
@@ -71,6 +76,18 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (audioSource != null && buttonPressClip != null)
             audioSource.PlayOneShot(buttonPressClip);
 
+        if (isResume && pauseMenu != null)
+        {
+            StartCoroutine(FlickerThenAction(() => pauseMenu.ResumeGame()));
+            return;
+        }
+
+        if (isQuitToMenu && pauseMenu != null)
+        {
+            StartCoroutine(FlickerThenAction(() => pauseMenu.QuitToMainMenu()));
+            return;
+        }
+
         if (isQuit)
         {
             StartCoroutine(FlickerThenAction(() => Quit()));
@@ -121,7 +138,7 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         while (elapsed < hoverDuration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, elapsed / hoverDuration);
 
             buttonText.color = Color.Lerp(startColor, targetColor, t);
