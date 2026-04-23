@@ -5,14 +5,15 @@ public class PlayerInteract : MonoBehaviour
     [Header("References")]
     [SerializeField] private Lantern lantern;
     [SerializeField] private Camera playerCamera;
+    [SerializeField] private PlayerManager playerManager;
 
     [Header("Interaction Scan")]
     [SerializeField] private float interactDistance = 4f;
     [SerializeField] private float sphereRadius = 0.15f;
     [SerializeField] private LayerMask interactMask = ~0;
 
-    [Header("Monster Detection (Full Screen)")]
-    [SerializeField] private float monsterDetectDistance = 12f;
+    [Header("Monster Detection")]
+    [SerializeField] private float monsterDetectDistance = 16f;
     [SerializeField] private LayerMask monsterMask;
     [SerializeField] private LayerMask visibilityMask;
 
@@ -20,7 +21,8 @@ public class PlayerInteract : MonoBehaviour
     private RaycastHit currentHit;
 
     private bool isLookingAtMonster;
-    private Collider currentMonster;
+    private Transform currentMonsterRoot;
+    private Collider currentMonsterCollider;
 
     private void Awake()
     {
@@ -30,18 +32,23 @@ public class PlayerInteract : MonoBehaviour
 
     private void Start()
     {
-        InputManager.Instance.OnClickPressed += Interact;
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed += Interact;
     }
 
     private void OnDestroy()
     {
-        InputManager.Instance.OnClickPressed -= Interact;
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed -= Interact;
     }
 
     private void Update()
     {
         UpdateHighlight();
         UpdateMonsterDetection();
+
+        if (playerManager != null)
+            playerManager.SetSeeingMonster(isLookingAtMonster);
     }
 
     public void AddBattery(int value)
@@ -49,9 +56,16 @@ public class PlayerInteract : MonoBehaviour
         lantern.AddBattery(value);
     }
 
-    // --------------------------
-    // INTERACTION (unchanged)
-    // --------------------------
+    public bool IsLookingAtMonster()
+    {
+        return isLookingAtMonster;
+    }
+
+    public Transform GetCurrentMonster()
+    {
+        return currentMonsterRoot;
+    }
+
     private void UpdateHighlight()
     {
         IInteractable newInteractable = null;
@@ -99,13 +113,14 @@ public class PlayerInteract : MonoBehaviour
             currentInteractable.ChangeHighlight(true);
     }
 
-    // --------------------------
-    // MONSTER DETECTION (FULL SCREEN)
-    // --------------------------
     private void UpdateMonsterDetection()
     {
         isLookingAtMonster = false;
-        currentMonster = null;
+        currentMonsterRoot = null;
+        currentMonsterCollider = null;
+
+        if (playerCamera == null)
+            return;
 
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(playerCamera);
 
@@ -120,50 +135,54 @@ public class PlayerInteract : MonoBehaviour
 
         foreach (Collider col in candidates)
         {
-            // 1. Must be on screen
+            if (col == null)
+                continue;
+
             if (!GeometryUtility.TestPlanesAABB(planes, col.bounds))
                 continue;
 
-            // 2. Must not be behind walls
-            Vector3 dir = (col.bounds.center - playerCamera.transform.position);
+            Vector3 pointToCheck = col.ClosestPoint(playerCamera.transform.position);
+            Vector3 dir = pointToCheck - playerCamera.transform.position;
             float dist = dir.magnitude;
-            dir.Normalize();
+
+            if (dist <= 0.001f)
+                continue;
+
+            dir /= dist;
 
             if (Physics.Raycast(
                 playerCamera.transform.position,
                 dir,
                 out RaycastHit hit,
-                dist,
+                dist + 0.05f,
                 visibilityMask,
                 QueryTriggerInteraction.Ignore))
             {
-                if (hit.collider == col)
+                Transform hitRoot = hit.collider.transform.root;
+                Transform candidateRoot = col.transform.root;
+
+                if (hitRoot == candidateRoot)
                 {
                     if (dist < closestDistance)
                     {
                         closestDistance = dist;
-                        currentMonster = col;
                         isLookingAtMonster = true;
-                        Debug.Log("Looking at monster: " + col.name);
+                        currentMonsterRoot = candidateRoot;
+                        currentMonsterCollider = col;
                     }
                 }
             }
         }
     }
 
-    public bool IsLookingAtMonster()
+    private void Interact()
     {
-        return isLookingAtMonster;
+        if (currentInteractable == null)
+            lantern.ToggleOnOff();
+        else
+            currentInteractable.Interact(this);
     }
 
-    public Collider GetCurrentMonster()
-    {
-        return currentMonster;
-    }
-
-    // --------------------------
-    // DEBUG
-    // --------------------------
     private void OnDrawGizmos()
     {
         if (playerCamera == null)
@@ -171,7 +190,6 @@ public class PlayerInteract : MonoBehaviour
 
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
-        // Interaction gizmo
         Vector3 start = ray.origin;
         Vector3 end = ray.origin + ray.direction * interactDistance;
 
@@ -188,27 +206,14 @@ public class PlayerInteract : MonoBehaviour
             Gizmos.DrawWireSphere(currentHit.point, sphereRadius * 0.5f);
         }
 
-        // Monster debug
-        if (isLookingAtMonster && currentMonster != null)
-        {
-            Gizmos.color = Color.red;
-            Gizmos.DrawLine(playerCamera.transform.position, currentMonster.bounds.center);
-            Gizmos.DrawWireSphere(currentMonster.bounds.center, 0.3f);
-        }
-    }
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(playerCamera.transform.position, monsterDetectDistance);
 
-    // --------------------------
-    // INPUT
-    // --------------------------
-    private void Interact()
-    {
-        if (currentInteractable == null)
+        if (isLookingAtMonster && currentMonsterCollider != null)
         {
-            lantern.ToggleOnOff();
-        }
-        else
-        {
-            currentInteractable.Interact(this);
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawLine(playerCamera.transform.position, currentMonsterCollider.bounds.center);
+            Gizmos.DrawWireSphere(currentMonsterCollider.bounds.center, 0.25f);
         }
     }
 }
