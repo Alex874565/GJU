@@ -73,7 +73,7 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
         if (isQuit)
         {
-            StartCoroutine(QuitAfterSound());
+            StartCoroutine(FlickerThenAction(() => Quit()));
             return;
         }
 
@@ -90,7 +90,10 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         }
 
         if (!string.IsNullOrEmpty(sceneToLoad))
-            StartCoroutine(LoadSceneWithDelay());
+        {
+            StartCoroutine(FlickerThenAction(() =>
+                UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad)));
+        }
     }
 
     IEnumerator FlickerThenAction(System.Action action)
@@ -152,10 +155,8 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
     }
 
-    IEnumerator QuitAfterSound()
+    private void Quit()
     {
-        float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
-        yield return new WaitForSeconds(clipLength);
         Application.Quit();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;

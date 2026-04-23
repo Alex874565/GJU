@@ -45,6 +45,8 @@ public class Lantern : MonoBehaviour
     private float targetMultiplier = 1f;
 
     private float noiseSeed;
+    
+    public bool lanternOn = false;
 
     public event Action OnLanternTurnedOff;
     public event Action OnLanternTurnedOn;
@@ -59,6 +61,9 @@ public class Lantern : MonoBehaviour
 
     private void Update()
     {
+        if(!lanternOn)
+            return;
+        
         UpdateBattery();
 
         float battery01 = GetBattery01();
@@ -222,5 +227,26 @@ public class Lantern : MonoBehaviour
     public float GetTotalBattery01()
     {
         return GetBattery01();
+    }
+
+    public void ToggleOnOff()
+    {
+        if(lanternOn)
+            TurnOff();
+        else if (currentBatteries > 0 && currentBatteryTime > 0f)
+            TurnOn();
+    }
+
+    private void TurnOff()
+    {
+        lanternOn = false;
+        OnLanternTurnedOff?.Invoke();
+        lanternLight.intensity = 0f;
+    }
+    
+    private void TurnOn()
+    {
+        lanternOn = true;
+        OnLanternTurnedOn?.Invoke();
     }
 }

@@ -12,6 +12,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 currentVelocity;
     private Vector3 targetVelocity;
 
+    public Surface WalkingSurface;
+    
     private void FixedUpdate()
     {
         if (InputManager.Instance == null) return;

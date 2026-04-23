@@ -44,8 +44,14 @@ public class SettingsPanel : MonoBehaviour
 
     IEnumerator DoFlickerThenOpen()
     {
+        settingsPanel.SetActive(true);
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+
         if (titleFlicker != null)
             yield return StartCoroutine(titleFlicker.DoFlickerAndReturn());
+
         yield return StartCoroutine(FadePanel(true));
     }
 
@@ -73,7 +79,7 @@ public class SettingsPanel : MonoBehaviour
             if (!open)
             {
                 NeonFlicker[] flickers = mainMenuContent.GetComponentsInChildren<NeonFlicker>(true);
-                foreach (NeonFlicker f in flickers) { f.StopAllCoroutines(); f.Start(); }
+                foreach (NeonFlicker f in flickers) { f.StopAllCoroutines(); f.RestartFlickerLoop(); }
 
                 ScanlineEffect[] scanlines = mainMenuContent.GetComponentsInChildren<ScanlineEffect>(true);
                 foreach (ScanlineEffect s in scanlines) { s.StopAllCoroutines(); s.Start(); }
