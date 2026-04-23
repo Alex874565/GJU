@@ -134,7 +134,7 @@ public class MonsterTeleporter : MonoBehaviour
             playerInteract != null &&
             playerInteract.IsLookingAtMonster() &&
             playerInteract.GetCurrentMonster() == transform.root;
-        Debug.Log($"Visible: {thisMonsterIsVisible}, CurrentMonster: {(playerInteract != null && playerInteract.GetCurrentMonster() != null ? playerInteract.GetCurrentMonster().name : "null")}, Me: {transform.root.name}");
+        
         if (thisMonsterIsVisible)
         {
             ResetLookAwayDelay();
