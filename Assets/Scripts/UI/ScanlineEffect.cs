@@ -10,7 +10,7 @@ public class ScanlineEffect : MonoBehaviour
 
     private float canvasHeight;
 
-    void Start()
+    public void Start()
     {
         canvasHeight = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect.height;
 

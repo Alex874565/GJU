@@ -13,7 +13,7 @@ public class NeonFlicker : MonoBehaviour
 
     private TextMeshProUGUI tmp;
 
-    void Start()
+    public void Start()
     {
         tmp = GetComponent<TextMeshProUGUI>();
         tmp.color = neonColor;

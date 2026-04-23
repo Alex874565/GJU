@@ -49,7 +49,7 @@ public class BackgroundMonsterFlicker : MonoBehaviour
     private Vector2 twitchOffset;
     private float anchoredX;
 
-    void Start()
+    public void Start()
     {
         img = GetComponent<Image>();
         rt = GetComponent<RectTransform>();
