@@ -68,7 +68,7 @@ public class PlayerManager : MonoBehaviour
     {
         float gain = 0f;
 
-        if (lanternOff || lightsOff)
+        if (lanternOff && lightsOff)
         {
             darknessTimer += Time.deltaTime;
             if (darknessTimer >= darknessGraceTime)
@@ -158,6 +158,11 @@ public class PlayerManager : MonoBehaviour
     {
         lanternOff = true;
     }
+    
+    public void ToggleLantern(bool value)
+    {
+        lanternOff = value;
+    }
 
     // ------------------------
     // GETTERS
@@ -185,7 +190,7 @@ public class PlayerManager : MonoBehaviour
 
         seesMonster = false;
         inEncounter = false;
-        lightsOff = false;
+        lightsOff = true;
         lanternOff = false;
         darknessTimer = 0f;
     }
