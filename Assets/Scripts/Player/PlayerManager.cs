@@ -26,8 +26,11 @@ public class PlayerManager : MonoBehaviour
     [Range(0f, 1f)]
     [SerializeField] private float currentFear = 0f;
 
-    private bool lanternOff;
-    private bool lightsOff;
+    public bool IsLanternOff => lanternOff;
+    public bool AreLightsOff => lightsOff;
+
+    private bool lanternOff = true;
+    private bool lightsOff = true;
     private bool seesMonster;
     private bool inEncounter;
 

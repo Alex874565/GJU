@@ -32,6 +32,9 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float lowBatteryNoiseAmount = 0.03f;
     [SerializeField] private float criticalNoiseAmount = 0.08f;
     [SerializeField] private float noiseSpeed = 14f;
+    
+    [Header("Dust")]
+    [SerializeField] private ParticleSystem lanternDust;
 
     private int currentBatteries;
     private float currentBatteryTime;
@@ -57,6 +60,9 @@ public class Lantern : MonoBehaviour
 
         currentBatteries = maxBatteries;
         currentBatteryTime = batteryDuration;
+
+        if (lanternDust != null)
+            lanternDust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
     private void Update()
@@ -238,12 +244,19 @@ public class Lantern : MonoBehaviour
     {
         IsOn = false;
         OnLanternTurnedOff?.Invoke();
+
         lanternLight.intensity = 0f;
+
+        if (lanternDust != null)
+            lanternDust.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
     
     private void TurnOn()
     {
         IsOn = true;
         OnLanternTurnedOn?.Invoke();
+
+        if (lanternDust != null)
+            lanternDust.Play();
     }
 }
