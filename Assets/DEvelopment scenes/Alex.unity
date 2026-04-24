@@ -1122,6 +1122,7 @@ MonoBehaviour:
   yawPivot: {fileID: 1485584733}
   moveSpeed: 2
   smoothing: 8
+  WalkingSurface: 0
 --- !u!114 &356039681
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1191,11 +1192,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ea496c323bb492f860b2cade58416ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  camera: {fileID: 0}
   yawPivot: {fileID: 1485584733}
   pitchPivot: {fileID: 523178239}
   bodyVisual: {fileID: 1400242468}
   lantern: {fileID: 2078258803}
   rb: {fileID: 356039682}
+  lanternAimDistance: 10
   sensitivity: 0.1
   minPitch: -80
   maxPitch: 80
@@ -1216,7 +1219,7 @@ MonoBehaviour:
   yawPivot: {fileID: 1485584733}
   moveSpeed: 2
   smoothing: 8
-  stepHeight: 10
+  stepHeight: 1
   stepUpSpeed: 3
   stepCheckDistance: 3
   stepCooldown: 0.2
@@ -2835,6 +2838,26 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 616939914}
   m_SourcePrefab: {fileID: 100100000, guid: 2f9c72eb36fb9f74ebdc16f204c40982, type: 3}
+--- !u!1 &1819344975 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2104424418223857323, guid: b65f3a2875f5feb40be5033c4062126f, type: 3}
+  m_PrefabInstance: {fileID: 7013490191346331998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1819344977
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819344975}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9684d3fb80be05498177caaba06561e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startOpen: 0
+  openAngle: -85
+  openSpeed: 5
 --- !u!1 &1867732121
 GameObject:
   m_ObjectHideFlags: 0
@@ -2881,13 +2904,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 356039682}
+  playerInteract: {fileID: 0}
+  fearRiseSpeed: 2.5
+  fearFallSpeed: 1.2
   bobFrequency: 0.9
   bobAmplitude: 0.03
   sideBobAmplitude: 0.015
   movementThreshold: 0.1
   positionLerpSpeed: 8
   idleBreathFrequency: 0.45
+  idleBreathFearFrequency: 1.8
   idleBreathAmplitude: 0.04
+  idleBreathFearAmplitude: 0.012
   turnTiltAmount: 0.25
   maxTilt: 3
   tiltLerpSpeed: 12
@@ -3341,12 +3369,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lanternLight: {fileID: 2078258805}
-  battery01: 1
+  maxBatteries: 3
+  batteryDuration: 30
   lowBatteryThreshold: 0.35
   criticalBatteryThreshold: 0.15
   normalIntensity: 400
   lowBatteryIntensity: 250
   criticalBatteryIntensity: 150
+  emptyIntensity: 8
   lowBatteryEpisodeChancePerSecond: 0.15
   criticalEpisodeChancePerSecond: 0.8
   episodeDurationRange: {x: 0.15, y: 0.6}
@@ -3727,10 +3757,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 6196255403717774181, guid: b65f3a2875f5feb40be5033c4062126f, type: 3}
+      propertyPath: startOpen
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 6196255403717774181, guid: b65f3a2875f5feb40be5033c4062126f, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2104424418223857323, guid: b65f3a2875f5feb40be5033c4062126f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1819344977}
   m_SourcePrefab: {fileID: 100100000, guid: b65f3a2875f5feb40be5033c4062126f, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
