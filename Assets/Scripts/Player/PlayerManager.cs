@@ -68,7 +68,7 @@ public class PlayerManager : MonoBehaviour
     {
         float gain = 0f;
 
-        if (lanternOff || lightsOff)
+        if (lanternOff && lightsOff)
         {
             darknessTimer += Time.deltaTime;
             if (darknessTimer >= darknessGraceTime)

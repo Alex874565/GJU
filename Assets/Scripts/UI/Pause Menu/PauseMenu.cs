@@ -13,6 +13,11 @@ public class PauseMenu : MonoBehaviour
 
     [Header("Animation")]
     public float fadeDuration = 0.3f;
+    
+    [Header("Player Control")]
+    [SerializeField] PlayerLook playerLook;
+    [SerializeField] private PlayerMovement playerMove;
+    [SerializeField] private PlayerInteract playerInteract;
 
     private bool isPaused = false;
 
@@ -44,8 +49,14 @@ public class PauseMenu : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
+
+        playerLook.enabled = false;
+        playerMove.enabled = false;
+        playerInteract.enabled = false;
+
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+
         StartCoroutine(FadePanel(true));
     }
 
@@ -62,8 +73,14 @@ public class PauseMenu : MonoBehaviour
     IEnumerator FadeAndResume()
     {
         yield return StartCoroutine(FadePanel(false));
+
         isPaused = false;
         Time.timeScale = 1f;
+
+        playerLook.enabled = true;
+        playerMove.enabled = true;
+        playerInteract.enabled = true;
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }

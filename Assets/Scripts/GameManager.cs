@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        ResetGame();
+      //  ResetGame();
     }
 
     [ContextMenu("Next Run / Reset Game")]
