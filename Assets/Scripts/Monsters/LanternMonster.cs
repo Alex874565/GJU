@@ -2,7 +2,7 @@
 using UnityEngine.AI;
 using System.Collections;
 
-public class LanternMonster : MonoBehaviour
+public class LanternMonster : MonoBehaviour, IResettable
 {
     [Header("References")]
     [SerializeField] private PlayerManager playerManager;
@@ -23,7 +23,10 @@ public class LanternMonster : MonoBehaviour
     [SerializeField] private float waitBeforeAttack = 2f;
     [SerializeField] private float invisibleTimeBeforeAttack = 0.35f;
     [SerializeField] private float deactivateAfterAttack = 0.1f;
-
+    [SerializeField] private float monsterCenterHeight = 1.6f;
+    [SerializeField] private float overshootMultiplier = 1.15f;
+    [SerializeField] private float clipThroughTime = 0.05f;
+    
     [Header("Flicker")]
     [SerializeField] private float flickerDuration = 2f;
     [SerializeField] private float startHiddenTime = 0.45f;
@@ -229,24 +232,79 @@ public class LanternMonster : MonoBehaviour
         playerManager?.AddAnxiety(100f);
 
         Vector3 startPos = transform.position;
-        Vector3 targetPos = playerCamera.transform.position - playerCamera.transform.forward * stopDistanceFromCamera;
+        
+// monster center at start
+        Vector3 startCenter = startPos + Vector3.up * monsterCenterHeight;
+
+// target center is in front of camera, but locked to start center height
+        Vector3 forward = playerCamera.transform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Vector3 targetCenterPos =
+            playerCamera.transform.position + forward * stopDistanceFromCamera;
+
+        targetCenterPos.y = startCenter.y;
+
+        Vector3 overshootCenterPos =
+            playerCamera.transform.position + forward * (stopDistanceFromCamera * overshootMultiplier);
+
+        overshootCenterPos.y = startCenter.y;
+
+        Vector3 targetPos = targetCenterPos - Vector3.up * monsterCenterHeight;
+        Vector3 overshootPos = overshootCenterPos - Vector3.up * monsterCenterHeight;
 
         float timer = 0f;
 
+        // === LUNGE ===
         while (timer < lungeDuration)
         {
             timer += Time.deltaTime;
             float t = Mathf.SmoothStep(0f, 1f, timer / lungeDuration);
 
             transform.position = Vector3.Lerp(startPos, targetPos, t);
-            transform.LookAt(playerCamera.transform);
+
+            Vector3 lookDir = playerCamera.transform.position - transform.position;
+            lookDir.y = 0f;
+
+            if (lookDir.sqrMagnitude > 0.001f)
+                transform.rotation = Quaternion.LookRotation(lookDir);
 
             yield return null;
         }
 
-        yield return new WaitForSeconds(deactivateAfterAttack);
+        // === CLIP THROUGH CAMERA (very fast) ===
+        float clipTimer = 0f;
 
+        while (clipTimer < clipThroughTime)
+        {
+            clipTimer += Time.deltaTime;
+            float t = clipTimer / clipThroughTime;
+
+            transform.position = Vector3.Lerp(targetPos, overshootPos, t);
+
+            yield return null;
+        }
+
+        // === OPTIONAL: 1 frame hold inside camera ===
+        yield return null;
+
+        // === DISAPPEAR ===
         monsterVisual?.SetActive(false);
         gameObject.SetActive(false);
+    }
+    
+    public void ResetState()
+    {
+        appeared = false;
+        attacked = false;
+        attacking = false;
+
+        appearTimer = 0f;
+        attackTimer = 0f;
+        appearDelay = Random.Range(minAppearDelay, maxAppearDelay);
+
+        monsterVisual?.SetActive(false);
+        gameObject.SetActive(true);
     }
 }

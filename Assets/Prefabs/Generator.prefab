@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6263145404112317478}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.991445, z: -0, w: 0.13052559}
+  m_LocalRotation: {x: 0, y: -0.9914449, z: 0, w: 0.13052626}
   m_LocalPosition: {x: 44.051273, y: 17.10445, z: -64.903625}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -376,14 +376,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   indicatorLight: {fileID: 4128064529808573753}
-  blinkSpeed: 3
-  houseLights: []
+  pulseSpeed: 1.5
+  minIndicatorIntensity: 0.01
+  maxIndicatorIntensity: 1
+  indicatorSmoothSpeed: 10
+  activationFlickerDuration: 1
+  activationFlickerInterval: {x: 0.04, y: 0.12}
+  activationSurgeIntensity: 3
+  houseLights:
+  - {fileID: 0}
+  - {fileID: 0}
   delayBetweenLights: 0.25
+  randomDelayVariation: 0.15
   lightFadeDuration: 0.6
-  targetIntensity: 1.5
+  targetIntensity: 1000
+  lightOvershootMultiplier: 1.25
+  globalVolume: {fileID: 0}
+  postProcessFadeDuration: 2
+  targetVignette: 0.15
+  targetSaturation: 0
+  targetContrast: 0
+  audioSource: {fileID: 0}
+  activateSound: {fileID: 8300000, guid: 49b8e6766f51f2a42acd9514a1c91459, type: 3}
+  humLoop: {fileID: 0}
+  sparks: {fileID: 0}
   dialogueToPlay: {fileID: 0}
   dialogueTriggersToEnable: []
   playerManager: {fileID: 0}
+  gameManager: {fileID: 0}
 --- !u!4 &7725725021130534950 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 6c293c74bd3e37f4d8bab2edb3499110, type: 3}

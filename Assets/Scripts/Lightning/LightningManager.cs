@@ -16,9 +16,9 @@ public class LightningManager : MonoBehaviour
     [SerializeField] private int maxFlashes = 3;
 
     [Header("Audio")]
-    [SerializeField] private AudioSource thunderAudio;
     [SerializeField] private AudioClip[] thunderClips;
-    [SerializeField] private float thunderDelay = 1.2f;
+    [SerializeField] private float minThunderDelay = 0.6f;
+    [SerializeField] private float maxThunderDelay = 2.5f;
         
     [Header("Extra Realism")]
     [SerializeField] private float minFlashDuration = 0.03f;
@@ -53,6 +53,9 @@ public class LightningManager : MonoBehaviour
 
     private IEnumerator Strike()
     {
+        
+        float strongestFlash = 0f;
+        
         if (lightningLights.Length == 0) yield break;
 
         Light light = lightningLights[Random.Range(0, lightningLights.Length)];
@@ -79,6 +82,7 @@ public class LightningManager : MonoBehaviour
 
             light.enabled = true;
             light.intensity = intensity;
+            strongestFlash = Mathf.Max(strongestFlash, intensity);
 
             yield return new WaitForSeconds(duration);
 
@@ -87,15 +91,26 @@ public class LightningManager : MonoBehaviour
             yield return new WaitForSeconds(gap);
         }
 
-        if (thunderAudio != null && thunderClips.Length > 0)
-            StartCoroutine(PlayThunderDelayed());
+        StartCoroutine(PlayThunderDelayed(strongestFlash, light.transform.position));
     }
 
-    private IEnumerator PlayThunderDelayed()
+    private IEnumerator PlayThunderDelayed(float flashIntensity, Vector3 thunderPosition)
     {
-        yield return new WaitForSeconds(thunderDelay);
+        float normalized = Mathf.InverseLerp(
+            flashIntensity * 0.5f,
+            flashIntensity * mainFlashMultiplier,
+            flashIntensity
+        );
 
-        thunderAudio.clip = thunderClips[Random.Range(0, thunderClips.Length)];
-        thunderAudio.Play();
+        float delay = Mathf.Lerp(maxThunderDelay, minThunderDelay, normalized);
+
+        yield return new WaitForSeconds(delay);
+
+        AudioClip clip = thunderClips[Random.Range(0, thunderClips.Length)];
+        if (clip == null) yield break;
+
+        float volume = Mathf.Lerp(0.5f, 1f, normalized);
+
+        AudioManager.PlaySFX(clip, thunderPosition, volume);
     }
 }

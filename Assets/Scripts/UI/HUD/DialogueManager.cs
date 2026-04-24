@@ -51,6 +51,9 @@ public class DialogueManager : MonoBehaviour
 
         foreach (DialogueLine line in lines)
         {
+            // 🔥 clear BEFORE fade in
+            dialogueText.text = "";
+
             yield return StartCoroutine(FadeCanvas(0f, 1f, fadeInDuration));
             yield return StartCoroutine(Typewrite(line));
             yield return new WaitForSeconds(line.displayDuration);

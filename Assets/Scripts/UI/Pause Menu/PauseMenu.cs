@@ -1,6 +1,7 @@
 using UnityEngine.InputSystem;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
@@ -20,6 +21,8 @@ public class PauseMenu : MonoBehaviour
     [SerializeField] private PlayerInteract playerInteract;
 
     private bool isPaused = false;
+    
+    public bool IsPaused => isPaused;
 
     void Awake()
     {
@@ -49,6 +52,8 @@ public class PauseMenu : MonoBehaviour
     {
         isPaused = true;
         Time.timeScale = 0f;
+        
+        AudioManager.Instance.SetPausedAudio(true);
 
         playerLook.enabled = false;
         playerMove.enabled = false;
@@ -72,17 +77,22 @@ public class PauseMenu : MonoBehaviour
 
     IEnumerator FadeAndResume()
     {
+        EventSystem.current?.SetSelectedGameObject(null);
+
+        yield return null;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        
+        AudioManager.Instance.SetPausedAudio(false);
         yield return StartCoroutine(FadePanel(false));
 
         isPaused = false;
         Time.timeScale = 1f;
-
+        
         playerLook.enabled = true;
         playerMove.enabled = true;
         playerInteract.enabled = true;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
     }
 
     IEnumerator QuitSequence()

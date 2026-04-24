@@ -9,10 +9,46 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float smoothing = 10f;
 
+    [System.Serializable]
+    public class SurfaceFootsteps
+    {
+        public Surface surface;
+        public AudioClip[] clips;
+    }
+
+    [Header("Footsteps")]
+    [SerializeField] private SurfaceFootsteps[] surfaceFootsteps;
+    [SerializeField] private AudioClip[] defaultFootsteps;
+    [SerializeField] private float stepDistance = 1.7f;
+    [SerializeField] private float minSpeedForSteps = 0.15f;
+    [SerializeField] private float footstepVolume = 0.85f;
+    [SerializeField] private float firstStepOffset = 0.6f;
+    [SerializeField] private float footstepPanAmount = 0.18f;
+    [SerializeField] private float finalStepVolumeMultiplier = 0.65f;
+
+    private bool wantsFinalLeftStep;
+    private bool wasMoving;
+    private bool leftStep;
+
+    [Header("Head Bob")]
+    [SerializeField] private Transform cameraPivot;
+    [SerializeField] private float bobAmount = 0.04f;
+    [SerializeField] private float bobReturnSpeed = 10f;
+
+    private float stepCycle;
+    private Vector3 cameraBaseLocalPos;
+    private float bobOffset;
+    
     private Vector3 currentVelocity;
     private Vector3 targetVelocity;
 
     public Surface WalkingSurface;
+    
+    private void Start()
+    {
+        if (cameraPivot != null)
+            cameraBaseLocalPos = cameraPivot.localPosition;
+    }
     
     private void FixedUpdate()
     {
@@ -44,5 +80,88 @@ public class PlayerMovement : MonoBehaviour
         currentVelocity = Vector3.Lerp(currentVelocity, targetVelocity, smoothFactor);
 
         rb.linearVelocity = new Vector3(currentVelocity.x, rb.linearVelocity.y, currentVelocity.z);
+        
+        HandleFootsteps();
+    }
+    
+    private void Update()
+    {
+        UpdateHeadBob();
+    }
+
+    private void HandleFootsteps()
+    {
+        float speed = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z).magnitude;
+        bool isMoving = speed >= minSpeedForSteps;
+
+        if (isMoving && !wasMoving)
+        {
+            stepCycle = stepDistance * firstStepOffset;
+        }
+
+        if (!isMoving)
+        {
+            if (wasMoving && !leftStep)
+            {
+                PlayFootstep(true, finalStepVolumeMultiplier);
+                bobOffset = -bobAmount * 0.5f;
+            }
+
+            stepCycle = 0f;
+            leftStep = true;
+            wasMoving = false;
+            return;
+        }
+
+        stepCycle += speed * Time.fixedDeltaTime;
+
+        if (stepCycle >= stepDistance)
+        {
+            stepCycle = 0f;
+
+            leftStep = !leftStep;
+
+            PlayFootstep(leftStep, 1);
+
+            bobOffset = leftStep ? -bobAmount : bobAmount * 0.6f;
+        }
+
+        wasMoving = true;
+    }
+
+    private void UpdateHeadBob()
+    {
+        if (cameraPivot == null) return;
+
+        bobOffset = Mathf.Lerp(bobOffset, 0f, Time.deltaTime * bobReturnSpeed);
+
+        Vector3 pos = cameraBaseLocalPos;
+        pos.y += bobOffset;
+
+        cameraPivot.localPosition = pos;
+    }
+
+    private void PlayFootstep(bool isLeftStep, float volumeMultiplier)
+    {
+        AudioClip[] clips = GetFootstepClips();
+        if (clips == null || clips.Length == 0) return;
+
+        AudioClip clip = clips[Random.Range(0, clips.Length)];
+
+        float volume = footstepVolume * volumeMultiplier;
+        float pan = isLeftStep ? -footstepPanAmount : footstepPanAmount;
+
+        AudioManager.PlaySFX(clip, transform.position, volume, pan);
+    }
+
+    private AudioClip[] GetFootstepClips()
+    {
+        foreach (SurfaceFootsteps surfaceSet in surfaceFootsteps)
+        {
+            if (surfaceSet.surface == WalkingSurface)
+                return surfaceSet.clips;
+        }
+
+        return defaultFootsteps;
     }
 }

@@ -60,9 +60,6 @@ public class Lantern : MonoBehaviour
 
         currentBatteries = maxBatteries;
         currentBatteryTime = batteryDuration;
-
-        if (lanternDust != null)
-            lanternDust.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
 
     private void Update()
@@ -255,8 +252,5 @@ public class Lantern : MonoBehaviour
     {
         IsOn = true;
         OnLanternTurnedOn?.Invoke();
-
-        if (lanternDust != null)
-            lanternDust.Play();
     }
 }

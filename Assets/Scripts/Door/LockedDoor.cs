@@ -1,91 +1,92 @@
 using UnityEngine;
 
-public class LockedDoor : MonoBehaviour
+public class LockedDoor : MonoBehaviour, IInteractable
 {
-    [Header("Settings")]
-    [SerializeField] private float interactRange = 2f;
-
     [Header("Dialogue")]
     [SerializeField] private DialogueData lockedDialogue;
 
     [Header("Animation")]
     [SerializeField] private Animator doorAnimator;
     [SerializeField] private string openTriggerName = "Open";
+    [SerializeField] private string closeTriggerName = "Close";
 
-    [Header("Player Reference")]
-    [SerializeField] private Transform player;
+    [Header("Audio")]
+    [SerializeField] private AudioClip[] openSounds;
+    [SerializeField] private AudioClip[] closeSounds;
+    [SerializeField] private AudioClip[] lockedSounds;
+    [SerializeField] private AudioClip[] unlockSounds;
 
-    private bool _playerInRange = false;
-    private bool _isOpen = false;
+    private bool isHighlighted;
+    private bool isOpen;
+    private bool unlocked;
 
-    private void Start()
+    public void ChangeHighlight(bool highlighted)
     {
-        if (player == null)
-        {
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
+        if (isOpen) return;
+
+        isHighlighted = highlighted;
+
+        if (highlighted)
+            InteractPrompt.Instance?.Show("Interact");
+        else
+            InteractPrompt.Instance?.Hide();
     }
 
-    private void Update()
+    public void Interact(PlayerInteract player)
     {
-        if (_isOpen || player == null) return;
-
-        float dist = Vector3.Distance(transform.position, player.position);
-        bool inRange = dist <= interactRange;
-
-        if (inRange && !_playerInRange)
+        if (isOpen)
         {
-            _playerInRange = true;
-            InteractPrompt.Instance?.Show("interact");
-        }
-        else if (!inRange && _playerInRange)
-        {
-            _playerInRange = false;
-            InteractPrompt.Instance?.Hide();
+            CloseDoor();
+            return;
         }
 
-        if (_playerInRange && Input.GetKeyDown(KeyCode.E))
-        {
-            TryOpen();
-        }
+        TryOpen();
     }
 
     private void TryOpen()
     {
-        if (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey)
+        if (unlocked || (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey))
         {
-            PlayerInventory.Instance.UseKey();
+            if (!unlocked)
+            {
+                PlayerInventory.Instance.UseKey();
+                unlocked = true;
+
+                if (unlockSounds != null && unlockSounds.Length > 0)
+                    AudioManager.PlaySFX(unlockSounds, transform.position);
+            }
+
             OpenDoor();
         }
         else
         {
+            if (lockedSounds != null && lockedSounds.Length > 0)
+                AudioManager.PlaySFX(lockedSounds, transform.position);
+
             DialogueManager.Instance?.PlayDialogue(lockedDialogue);
         }
     }
 
     private void OpenDoor()
     {
-        _isOpen = true;
-        _playerInRange = false;
+        isOpen = true;
         InteractPrompt.Instance?.Hide();
 
-        if (doorAnimator != null)
-        {
-            doorAnimator.SetTrigger(openTriggerName);
-        }
-        else
-        {
-            var col = GetComponent<Collider>();
-            if (col != null) col.enabled = false;
+        if (openSounds != null && openSounds.Length > 0)
+            AudioManager.PlaySFX(openSounds, transform.position);
 
-            Debug.Log("[LockedDoor] Door opened.");
-        }
+        if (doorAnimator != null)
+            doorAnimator.SetTrigger(openTriggerName);
     }
 
-    private void OnDrawGizmosSelected()
+    private void CloseDoor()
     {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, interactRange);
+        isOpen = false;
+
+        if (closeSounds != null && closeSounds.Length > 0)
+            AudioManager.PlaySFX(closeSounds, transform.position);
+
+        if (doorAnimator != null)
+            doorAnimator.SetTrigger(closeTriggerName);
     }
 }
