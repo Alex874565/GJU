@@ -4,6 +4,11 @@ public class CameraEffects : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Rigidbody rb;
+    [SerializeField] private PlayerInteract playerInteract;
+
+    [Header("Fear")]
+    [SerializeField] private float fearRiseSpeed = 2.5f;
+    [SerializeField] private float fearFallSpeed = 1.2f;
 
     [Header("Head Bob")]
     [SerializeField] private float bobFrequency = 0.7f;
@@ -14,7 +19,9 @@ public class CameraEffects : MonoBehaviour
 
     [Header("Idle Breathing")]
     [SerializeField] private float idleBreathFrequency = 0.45f;
+    [SerializeField] private float idleBreathFearFrequency = 1.8f;
     [SerializeField] private float idleBreathAmplitude = 0.004f;
+    [SerializeField] private float idleBreathFearAmplitude = 0.012f;
 
     [Header("Turn Tilt")]
     [SerializeField] private float turnTiltAmount = 0.6f;
@@ -39,6 +46,7 @@ public class CameraEffects : MonoBehaviour
 
     private float currentTilt;
     private float currentPitchSway;
+    private float fear;
 
     private void Start()
     {
@@ -48,8 +56,17 @@ public class CameraEffects : MonoBehaviour
 
     private void Update()
     {
+        UpdateFear();
         ApplyPositionEffects();
         ApplyRotationEffects();
+    }
+
+    private void UpdateFear()
+    {
+        bool lookingAtMonster = playerInteract != null && playerInteract.IsLookingAtMonster();
+        float targetFear = lookingAtMonster ? 1f : 0f;
+        float speed = lookingAtMonster ? fearRiseSpeed : fearFallSpeed;
+        fear = Mathf.MoveTowards(fear, targetFear, speed * Time.deltaTime);
     }
 
     private void ApplyPositionEffects()
@@ -74,9 +91,14 @@ public class CameraEffects : MonoBehaviour
         }
         else
         {
-            bobTimer += Time.deltaTime * idleBreathFrequency;
+            float breathFrequency = Mathf.Lerp(idleBreathFrequency, idleBreathFearFrequency, fear);
+            float breathAmplitude = Mathf.Lerp(idleBreathAmplitude, idleBreathFearAmplitude, fear);
 
-            float breathY = Mathf.Sin(bobTimer * Mathf.PI * 2f) * idleBreathAmplitude;
+            bobTimer += Time.deltaTime * breathFrequency;
+
+            float breathWave = Mathf.Sin(bobTimer * Mathf.PI * 2f);
+            float breathY = breathWave * breathAmplitude;
+
             bobOffset = new Vector3(0f, breathY, 0f);
         }
 
