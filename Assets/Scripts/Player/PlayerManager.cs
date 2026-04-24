@@ -158,6 +158,11 @@ public class PlayerManager : MonoBehaviour
     {
         lanternOff = true;
     }
+    
+    public void ToggleLantern(bool value)
+    {
+        lanternOff = value;
+    }
 
     // ------------------------
     // GETTERS
@@ -185,7 +190,7 @@ public class PlayerManager : MonoBehaviour
 
         seesMonster = false;
         inEncounter = false;
-        lightsOff = false;
+        lightsOff = true;
         lanternOff = false;
         darknessTimer = 0f;
     }

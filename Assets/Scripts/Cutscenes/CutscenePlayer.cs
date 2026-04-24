@@ -8,16 +8,14 @@ public class CutscenePlayer : MonoBehaviour
     public CinemachineCamera gameplayCam;
     public CinemachineCamera cutsceneCam;
     public PlayableDirector timeline;
-    public MonoBehaviour playerController;
-
     public void Play()
     {
         StartCoroutine(PlayRoutine());
     }
 
-    IEnumerator PlayRoutine()
+    public IEnumerator PlayRoutine()
     {
-        playerController.enabled = false;
+        InputManager.Instance.enabled = false;
 
         gameplayCam.Priority = 0;
         cutsceneCam.Priority = 20;
@@ -29,6 +27,6 @@ public class CutscenePlayer : MonoBehaviour
         cutsceneCam.Priority = 0;
         gameplayCam.Priority = 20;
 
-        playerController.enabled = true;
+        InputManager.Instance.enabled = true;
     }
 }
