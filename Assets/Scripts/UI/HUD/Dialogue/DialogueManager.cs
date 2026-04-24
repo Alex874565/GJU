@@ -15,7 +15,7 @@ public class DialogueManager : MonoBehaviour
     public float fadeInDuration = 0.4f;
     public float fadeOutDuration = 0.6f;
 
-    private bool isPlaying = false;
+    public bool isPlaying = false;
 
     void Awake()
     {
@@ -48,16 +48,19 @@ public class DialogueManager : MonoBehaviour
     IEnumerator PlaySequence(DialogueLine[] lines)
     {
         isPlaying = true;
-
         foreach (DialogueLine line in lines)
         {
+            dialogueText.text = "";
+
             yield return StartCoroutine(FadeCanvas(0f, 1f, fadeInDuration));
             yield return StartCoroutine(Typewrite(line));
             yield return new WaitForSeconds(line.displayDuration);
             yield return StartCoroutine(FadeCanvas(1f, 0f, fadeOutDuration));
+
+            dialogueText.text = "";
+
             yield return new WaitForSeconds(0.2f);
         }
-
         isPlaying = false;
     }
 

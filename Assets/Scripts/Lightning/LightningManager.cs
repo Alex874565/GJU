@@ -29,6 +29,8 @@ public class LightningManager : MonoBehaviour
     [SerializeField] private float mainFlashMultiplier = 1.8f;
     [SerializeField] private float singleBigFlashChance = 0.25f;
 
+    private Coroutine lightningLoopCoroutine;
+
     private void Start()
     {
         foreach (Light light in lightningLights)
@@ -36,8 +38,18 @@ public class LightningManager : MonoBehaviour
             if (light == null) continue;
             light.enabled = false;
         }
+        lightningLoopCoroutine = StartCoroutine(LightningLoop());
+    }
 
-        StartCoroutine(LightningLoop());
+    public void StopLoop()
+    {
+        if (lightningLoopCoroutine != null)
+            StopCoroutine(lightningLoopCoroutine);
+    }
+
+    public void StartLoop()
+    {
+        lightningLoopCoroutine = StartCoroutine(LightningLoop());
     }
 
     private IEnumerator LightningLoop()
@@ -97,5 +109,10 @@ public class LightningManager : MonoBehaviour
 
         thunderAudio.clip = thunderClips[Random.Range(0, thunderClips.Length)];
         thunderAudio.Play();
+    }
+
+    public IEnumerator StrikeOnce()
+    {
+        yield return StartCoroutine(Strike());
     }
 }
