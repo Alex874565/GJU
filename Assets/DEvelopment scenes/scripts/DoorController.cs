@@ -1,54 +1,114 @@
 ﻿using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class DoorController : MonoBehaviour
 {
     [Header("Door State")]
     [SerializeField] private bool startOpen = false;
+    [SerializeField] private bool isLocked = false;
 
     [Header("Door Rotation")]
     [SerializeField] private float openAngle = -85f;
     [SerializeField] private float openSpeed = 5f;
 
-    private bool isOpen;
+    [Header("Interaction")]
+    [SerializeField] private float interactRange = 2f;
 
-    private Quaternion closedRotation;
-    private Quaternion openRotation;
+    [Header("Dialogue")]
+    [SerializeField] private DialogueData lockedDialogue;
+
+    [Header("Player Reference")]
+    [SerializeField] private Transform player;
+
+    private bool _isOpen;
+    private bool _playerInRange = false;
+    private Quaternion _closedRotation;
+    private Quaternion _openRotation;
 
     private void Start()
     {
-        // Nu modifică poziția/rotația setată de tine în scenă.
-        // Rotația din scenă devine poziția de CLOSED.
-        closedRotation = transform.localRotation;
+        if (player == null)
+        {
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null) player = playerObj.transform;
+        }
 
-        // Fiecare ușă poate avea propriul unghi:
-        // -85, +85, 120 etc.
-        openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        _closedRotation = transform.localRotation;
+        _openRotation = _closedRotation * Quaternion.Euler(0f, openAngle, 0f);
 
-        isOpen = startOpen;
-
-        // Dacă vrei ca ușa să înceapă deja deschisă
-        if (isOpen)
-            transform.localRotation = openRotation;
+        _isOpen = startOpen;
+        if (_isOpen)
+            transform.localRotation = _openRotation;
     }
 
     private void Update()
     {
-        Quaternion targetRotation = isOpen ? openRotation : closedRotation;
-
+        Quaternion targetRotation = _isOpen ? _openRotation : _closedRotation;
         transform.localRotation = Quaternion.Slerp(
             transform.localRotation,
             targetRotation,
             Time.deltaTime * openSpeed
         );
+
+        if (player == null) return;
+
+        float dist = Vector3.Distance(transform.position, player.position);
+        bool inRange = dist <= interactRange;
+
+        if (inRange && !_playerInRange)
+        {
+            _playerInRange = true;
+            InteractPrompt.Instance?.Show("interact");
+        }
+        else if (!inRange && _playerInRange)
+        {
+            _playerInRange = false;
+            InteractPrompt.Instance?.Hide();
+        }
+
+        if (_playerInRange && Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            TryInteract();
+        }
+    }
+
+    private void TryInteract()
+    {
+        Debug.Log($"TryInteract — isLocked: {isLocked}, HasKey: {PlayerInventory.Instance?.HasKey}");
+
+        if (isLocked)
+        {
+            if (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey)
+            {
+                PlayerInventory.Instance.UseKey();
+                isLocked = false;
+                ToggleDoor();
+            }
+            else
+            {
+                Debug.Log("Playing locked dialogue");
+                DialogueManager.Instance?.PlayDialogue(lockedDialogue);
+            }
+        }
+        else
+        {
+            ToggleDoor();
+        }
     }
 
     public void ToggleDoor()
     {
-        isOpen = !isOpen;
+        _isOpen = !_isOpen;
     }
 
     public bool IsOpen()
     {
-        return isOpen;
+        return _isOpen;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, interactRange);
     }
 }
