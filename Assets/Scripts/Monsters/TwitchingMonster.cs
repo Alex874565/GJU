@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class TwitchingSpriteMonster : MonoBehaviour
+public class TwitchingMonster : MonoBehaviour
 {
     [System.Serializable]
     public class FrameSet
@@ -12,6 +12,7 @@ public class TwitchingSpriteMonster : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private SpriteRenderer spriteRenderer;
+    [SerializeField] private Transform visualRoot;
 
     [Header("Frame Sets")]
     [SerializeField] private FrameSet[] frameSets;
@@ -28,23 +29,30 @@ public class TwitchingSpriteMonster : MonoBehaviour
     [SerializeField] private float minBurstDelay = 0.3f;
     [SerializeField] private float maxBurstDelay = 1.5f;
 
-    [Header("Jitter")]
+    [Header("Visual Jitter Only")]
     [SerializeField] private float positionJitter = 0.02f;
     [SerializeField] private float rotationJitter = 3f;
 
     private Sprite[] activeFrames;
     private int currentIndex;
     private Coroutine routine;
-    private Vector3 baseLocalPosition;
-    private Quaternion baseLocalRotation;
+
+    private Vector3 baseVisualLocalPosition;
+    private Quaternion baseVisualLocalRotation;
 
     private void Awake()
     {
         if (spriteRenderer == null)
             spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
-        baseLocalPosition = transform.localPosition;
-        baseLocalRotation = transform.localRotation;
+        if (visualRoot == null && spriteRenderer != null)
+            visualRoot = spriteRenderer.transform;
+
+        if (visualRoot != null)
+        {
+            baseVisualLocalPosition = visualRoot.localPosition;
+            baseVisualLocalRotation = visualRoot.localRotation;
+        }
     }
 
     private void OnEnable()
@@ -63,8 +71,7 @@ public class TwitchingSpriteMonster : MonoBehaviour
         if (routine != null)
             StopCoroutine(routine);
 
-        transform.localPosition = baseLocalPosition;
-        transform.localRotation = baseLocalRotation;
+        ResetVisual();
     }
 
     private void ChooseFrameSet()
@@ -93,16 +100,12 @@ public class TwitchingSpriteMonster : MonoBehaviour
                 yield return new WaitForSeconds(Random.Range(minInterval, maxInterval));
             }
 
-            transform.localPosition = baseLocalPosition;
-            transform.localRotation = baseLocalRotation;
+            ResetVisual();
         }
     }
 
     private void NextFrame()
     {
-        if (activeFrames == null || activeFrames.Length == 0)
-            return;
-
         int next = Random.Range(0, activeFrames.Length);
 
         if (next == currentIndex)
@@ -110,20 +113,32 @@ public class TwitchingSpriteMonster : MonoBehaviour
 
         SetFrame(next);
 
-        transform.localPosition = baseLocalPosition + Random.insideUnitSphere * positionJitter;
+        if (visualRoot == null) return;
 
-        transform.localRotation = baseLocalRotation * Quaternion.Euler(
+        Vector3 jitter = Random.insideUnitSphere * positionJitter;
+        jitter.z = 0f;
+
+        visualRoot.localPosition = baseVisualLocalPosition + jitter;
+        visualRoot.localRotation = baseVisualLocalRotation * Quaternion.Euler(
             0f,
             0f,
             Random.Range(-rotationJitter, rotationJitter)
         );
     }
 
+    private void ResetVisual()
+    {
+        if (visualRoot == null) return;
+
+        visualRoot.localPosition = baseVisualLocalPosition;
+        visualRoot.localRotation = baseVisualLocalRotation;
+    }
+
     private void SetFrame(int index)
     {
         currentIndex = index;
 
-        if (spriteRenderer != null && activeFrames[index] != null)
+        if (activeFrames[index] != null)
             spriteRenderer.sprite = activeFrames[index];
     }
 

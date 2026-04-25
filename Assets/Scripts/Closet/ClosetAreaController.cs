@@ -67,8 +67,13 @@ public class ClosetAreaController : MonoBehaviour
         inCloset = true;
 
 // 🔥 force lantern OFF
-        if (lantern != null && lantern.IsOn)
-            lantern.ToggleOnOff();
+        if (lantern != null)
+        {
+            //lantern.InputLocked = true;
+
+            //if (lantern.IsOn)
+                //lantern.ToggleOnOff();
+        }
         
         UpdateHiddenState();
     }
@@ -79,6 +84,14 @@ public class ClosetAreaController : MonoBehaviour
 
         inCloset = false;
 
+        if (lantern != null)
+        {
+            //lantern.InputLocked = true;
+
+            //if (lantern.IsOn)
+                //lantern.ToggleOnOff();
+        }
+        
         if (wasHidden && playerManager != null)
         {
             playerManager.RegisterHiddenSource(false);

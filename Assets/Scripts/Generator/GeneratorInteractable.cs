@@ -39,12 +39,15 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
     [SerializeField] private ParticleSystem sparks;
 
     [Header("Dialogue")]
-    [SerializeField] private GameObject dialogueToPlay;
-    [SerializeField] private GameObject[] dialogueTriggersToEnable;
+    [SerializeField] private DialogueManager dialogueManager;
+    [SerializeField] private DialogueData dialogueAfterActivation;
 
     [Header("Other")]
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private GameManager gameManager;
+    
+    [Header("Disable After Use")]
+    [SerializeField] private MonsterTrigger[] triggersToDisableOnUse;
     
     private bool isHighlighted;
     private bool activated;
@@ -101,6 +104,7 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
         if (!canInteract) return;
 
         canInteract = false;
+        SetTriggersUsed();
         activated = true;
         InteractPrompt.Instance?.Hide();
 
@@ -108,6 +112,16 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
             StopCoroutine(activationRoutine);
 
         activationRoutine = StartCoroutine(ActivateGeneratorRoutine());
+    }
+    
+    private void SetTriggersUsed()
+    {
+        foreach (MonsterTrigger trigger in triggersToDisableOnUse)
+        {
+            if (trigger == null) continue;
+
+            trigger.ForceDeactivateAndMarkUsed();
+        }
     }
 
     private IEnumerator ActivateGeneratorRoutine()
@@ -147,17 +161,10 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
 
         yield return new WaitForSeconds(lightFadeDuration);
 
-        if (dialogueToPlay != null)
-            dialogueToPlay.SetActive(true);
-
-        foreach (GameObject trigger in dialogueTriggersToEnable)
+        if (dialogueManager != null && dialogueAfterActivation != null)
         {
-            if (trigger != null)
-                trigger.SetActive(true);
+            dialogueManager.PlayDialogue(dialogueAfterActivation);
         }
-        
-        if (gameManager != null)
-            gameManager.ActivateDefaultEnvironment();
     }
 
     private IEnumerator ActivationIndicatorFlicker()
@@ -267,15 +274,6 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
 
             light.enabled = false;
             light.intensity = 0f;
-        }
-
-        if (dialogueToPlay != null)
-            dialogueToPlay.SetActive(false);
-
-        foreach (GameObject trigger in dialogueTriggersToEnable)
-        {
-            if (trigger != null)
-                trigger.SetActive(false);
         }
 
         if (audioSource != null)

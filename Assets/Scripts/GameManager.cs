@@ -11,12 +11,14 @@ public class GameManager : MonoBehaviour
     [Header("Player")]
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private GameObject playerVisual;
+    [SerializeField] private Rigidbody playerRb;
 
     [Header("Environment Variation")]
-    [SerializeField] private GameObject defaultEnvironment; // first / lights-on version
-    [SerializeField] private GameObject[] randomEnvironments;
+    [SerializeField] private GameObject[] environments;
 
-    private GameObject currentEnvironment;
+    [Header("Timing")]
+    [SerializeField] private float delayBeforeResetAfterDeath = 1.5f;
     
     [Header("Cutscenes")]
     [SerializeField] private CutscenePlayer introCutscene;
@@ -50,27 +52,68 @@ public class GameManager : MonoBehaviour
     
     private bool mouseClicked = false;
 
+    private GameObject currentEnvironment;
+    
+    private Vector3 initialPlayerPosition;
+    private Quaternion initialPlayerRotation;
+    
     private void Awake()
     {
         resettables = FindObjectsOfType<MonoBehaviour>(true)
             .OfType<IResettable>()
             .ToArray();
+
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
 
+        // 🔥 STORE INITIAL WORLD TRANSFORM
+        initialPlayerPosition = playerTransform.position;
+        initialPlayerRotation = playerTransform.rotation;
     }
 
     private void Start()
     {
-        //ResetGame();
+        ResetGame();
     }
+    
+    private void ResetPlayerTransform()
+    {
+        if (playerRb != null)
+        {
+            playerRb.linearVelocity = Vector3.zero;
+            playerRb.angularVelocity = Vector3.zero;
 
-    [ContextMenu("Next Run / Reset Game")]
+            playerRb.position = initialPlayerPosition;
+            playerRb.rotation = initialPlayerRotation;
+        }
+
+        playerTransform.SetPositionAndRotation(
+            initialPlayerPosition,
+            initialPlayerRotation
+        );
+
+        Physics.SyncTransforms();
+    }
+    
+    [ContextMenu("Reset Game")]
     public void ResetGame()
     {
         if (isResetting) return;
 
         resetRoutine = StartCoroutine(ResetGameRoutine());
+    }
+
+    public void ResetGameAfterDeath()
+    {
+        if (isResetting) return;
+
+        resetRoutine = StartCoroutine(ResetGameAfterDeathRoutine());
+    }
+
+    private IEnumerator ResetGameAfterDeathRoutine()
+    {
+        yield return new WaitForSeconds(delayBeforeResetAfterDeath);
+        yield return StartCoroutine(ResetGameRoutine());
     }
 
     private IEnumerator ResetGameRoutine()
@@ -82,8 +125,6 @@ public class GameManager : MonoBehaviour
 
         runNo++;
 
-        playerTransform.position = introCutscene.transform.position;
-        playerTransform.rotation = introCutscene.transform.rotation;
         playerManager.ResetAllStates();
 
         lantern.InputLocked = true;
@@ -92,12 +133,18 @@ public class GameManager : MonoBehaviour
 
         if (runNo == 1)
         {
-            ActivateDefaultEnvironment();
-
+            ActivateRandomEnvironment();
+            
             foreach (var r in resettables)
                 r.ResetState();
 
+            if (playerVisual != null)
+                playerVisual.SetActive(false);
+
             yield return introCutscene.PlayRoutine();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(true);
             yield return new WaitForSeconds(afterCutsceneDelay);
             if (lightningManager != null)
                 lightningManager.StartLoop();
@@ -132,8 +179,16 @@ public class GameManager : MonoBehaviour
 
             foreach (var r in resettables)
                 r.ResetState();
+            
+            ResetPlayerTransform();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(false);
 
             yield return introCutscene.PlayRoutine();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(true);
             
             yield return new WaitForSeconds(afterCutsceneDelay);
             if (lightningManager != null)
@@ -200,18 +255,10 @@ public class GameManager : MonoBehaviour
 
     private void ActivateRandomEnvironment()
     {
-        if (randomEnvironments == null || randomEnvironments.Length == 0)
-        {
-            ActivateEnvironment(defaultEnvironment);
+        if (environments == null || environments.Length == 0)
             return;
-        }
 
-        GameObject chosen = randomEnvironments[Random.Range(0, randomEnvironments.Length)];
+        GameObject chosen = environments[Random.Range(0, environments.Length)];
         ActivateEnvironment(chosen);
-    }
-
-    public void ActivateDefaultEnvironment()
-    {
-        ActivateEnvironment(defaultEnvironment);
     }
 }

@@ -14,11 +14,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: "Good... it\u2019s still working."
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04
   - text: "But it won\u2019t last long..."
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04
-  - text: I need to find batteries...
+  - text: I need to reach the generator and turn it back on.
+    voiceover: {fileID: 0}
+    displayDuration: 2
+    typewriterSpeed: 0.04
+  - text: Meanwhile, I'll use what batteries I can find...
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04

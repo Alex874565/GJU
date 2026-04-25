@@ -156,7 +156,7 @@ public class PlayerManager : MonoBehaviour
             yield return StartCoroutine(deathCutscene.PlayRoutine());
 
         if (gameManager != null)
-            gameManager.ResetGame();
+            gameManager.ResetGameAfterDeath();
     }
 
     public void RegisterMonsterVisible(bool visible)

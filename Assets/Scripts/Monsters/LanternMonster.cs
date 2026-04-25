@@ -229,7 +229,7 @@ public class LanternMonster : MonoBehaviour, IResettable
         if (audioSource != null && jumpSound != null)
             audioSource.PlayOneShot(jumpSound);
 
-        playerManager?.AddAnxiety(100f);
+        playerManager?.AddAnxiety(120f);
 
         Vector3 startPos = transform.position;
         
