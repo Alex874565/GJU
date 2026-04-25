@@ -18,6 +18,9 @@ public class AudioManager : MonoBehaviour
     [Header("Menu Music")]
     [SerializeField] private string mainMenuSceneName = "Main Menu";
     [SerializeField] private float sceneMusicFadeDuration = 0.6f;
+    
+    [Header("UI Audio")]
+    [SerializeField] private AudioSource uiSource;
 
     private readonly List<AudioSource> sfxPool = new();
     private readonly List<AudioSource> pausedSfxSources = new();
@@ -55,12 +58,17 @@ public class AudioManager : MonoBehaviour
         if (pauseMusicSource != null)
         {
             pauseMusicSource.loop = true;
-            pauseMusicSource.volume = 0f;
 
             if (SceneManager.GetActiveScene().name == mainMenuSceneName)
+            {
+                pauseMusicSource.volume = SettingsController.GetAmbianceVolume();
                 pauseMusicSource.Play();
+            }
             else
+            {
+                pauseMusicSource.volume = 0f;
                 pauseMusicSource.Pause();
+            }
         }
     }
 
@@ -105,7 +113,7 @@ public class AudioManager : MonoBehaviour
             pauseMusicSource.volume = musicVolume;
     }
 
-    private IEnumerator FadeMenuMusic(bool fadeIn)
+    public IEnumerator FadeMenuMusic(bool fadeIn)
     {
         float target = fadeIn ? SettingsController.GetAmbianceVolume() : 0f;
 
@@ -119,6 +127,7 @@ public class AudioManager : MonoBehaviour
         {
             timer += Time.unscaledDeltaTime;
             float t = Mathf.SmoothStep(0f, 1f, timer / sceneMusicFadeDuration);
+
             pauseMusicSource.volume = Mathf.Lerp(start, target, t);
             yield return null;
         }
@@ -395,6 +404,20 @@ public class AudioManager : MonoBehaviour
 
             pauseMusicSource.volume = SettingsController.GetAmbianceVolume();
         }
+    }
+    
+    public static void PlayUISFX(AudioClip clip, float volumeMultiplier = 1f, float pitch = 1f)
+    {
+        if (Instance == null || clip == null || Instance.uiSource == null) return;
+
+        Instance.uiSource.ignoreListenerPause = true;
+        Instance.uiSource.spatialBlend = 0f;
+        Instance.uiSource.mute = false;
+        Instance.uiSource.pitch = pitch;
+        Instance.uiSource.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
+
+        // ❗ NO Stop() here → allows overlapping crackles
+        Instance.uiSource.PlayOneShot(clip);
     }
 
     public static void PlaySFX(AudioClip clip, Vector3 position)

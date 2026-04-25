@@ -23,7 +23,6 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
     public bool isBack = false;
 
     [Header("Audio")]
-    public AudioSource audioSource;
     public AudioClip buttonPressClip;
 
     [Header("Colors")]
@@ -73,9 +72,6 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (audioSource != null && buttonPressClip != null)
-            audioSource.PlayOneShot(buttonPressClip);
-
         if (isResume && pauseMenu != null)
         {
             StartCoroutine(FlickerThenAction(() => pauseMenu.ResumeGame()));
@@ -109,21 +105,37 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (!string.IsNullOrEmpty(sceneToLoad))
         {
             StartCoroutine(FlickerThenAction(() =>
-                UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad)));
+                StartCoroutine(StartGameRoutine())));
         }
+    }
+    
+    private IEnumerator StartGameRoutine()
+    {
+        if (AudioManager.Instance != null)
+            yield return StartCoroutine(AudioManager.Instance.FadeMenuMusic(false));
+
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
     }
 
     IEnumerator FlickerThenAction(System.Action action)
     {
+        if (buttonPressClip != null)
+        {
+            float pitch = Random.Range(1.1f, 1.35f);
+            AudioManager.PlayUISFX(buttonPressClip, 1f, pitch);
+        }
+
+        float waitTime = buttonPressClip != null ? buttonPressClip.length : 0.2f;
+        yield return new WaitForSecondsRealtime(waitTime);
+
         if (buttonFlicker != null)
             yield return StartCoroutine(buttonFlicker.DoFlicker());
 
-        float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
-        yield return new WaitForSecondsRealtime(clipLength);
+        yield return new WaitForSecondsRealtime(.05f);
 
         action?.Invoke();
     }
-
+    
     IEnumerator AnimateHover(bool entering)
     {
         float elapsed = 0f;
