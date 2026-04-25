@@ -85,14 +85,16 @@ public class PauseMenu : MonoBehaviour
         Cursor.visible = false;
         
         AudioManager.Instance.SetPausedAudio(false);
+        
+        playerLook.enabled = true;
+        playerMove.enabled = true;
+        playerInteract.enabled = true;
+        
         yield return StartCoroutine(FadePanel(false));
 
         isPaused = false;
         Time.timeScale = 1f;
         
-        playerLook.enabled = true;
-        playerMove.enabled = true;
-        playerInteract.enabled = true;
     }
 
     IEnumerator QuitSequence()
