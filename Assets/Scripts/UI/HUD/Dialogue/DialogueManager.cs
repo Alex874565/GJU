@@ -41,6 +41,7 @@ public class DialogueManager : MonoBehaviour
     public void PlayDialogue(DialogueData data)
     {
         if (isPlaying) return;
+        if(data == null || data.lines == null || data.lines.Length == 0) return;
         StartCoroutine(PlaySequence(data));
     }
 

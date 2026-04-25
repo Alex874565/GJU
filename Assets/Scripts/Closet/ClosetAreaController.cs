@@ -45,12 +45,19 @@ public class ClosetAreaController : MonoBehaviour
         UpdateHiddenState();
     }
     
+    private bool wasHidden;
+
     private void UpdateHiddenState()
     {
         bool hidden = inCloset && closetDoor != null && !closetDoor.IsOpen();
 
+        if (hidden == wasHidden)
+            return;
+
         if (playerManager != null)
-            playerManager.SetHidden(hidden);
+            playerManager.RegisterHiddenSource(hidden);
+
+        wasHidden = hidden;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -58,9 +65,6 @@ public class ClosetAreaController : MonoBehaviour
         if (!other.CompareTag("Player")) return;
         
         inCloset = true;
-
-        if (playerManager != null)
-            playerManager.SetHidden(true);
 
 // 🔥 force lantern OFF
         if (lantern != null && lantern.IsOn)
@@ -75,6 +79,12 @@ public class ClosetAreaController : MonoBehaviour
 
         inCloset = false;
 
+        if (wasHidden && playerManager != null)
+        {
+            playerManager.RegisterHiddenSource(false);
+            wasHidden = false;
+        }
+
         if (playerRb != null)
         {
             playerRb.angularVelocity = Vector3.zero;
@@ -82,7 +92,5 @@ public class ClosetAreaController : MonoBehaviour
             playerRb.rotation = Quaternion.Euler(0f, playerRb.rotation.eulerAngles.y, 0f);
             playerRb.constraints = RigidbodyConstraints.FreezeRotation;
         }
-
-        UpdateHiddenState();
     }
 }

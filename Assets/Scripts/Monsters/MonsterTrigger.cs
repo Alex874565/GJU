@@ -16,12 +16,16 @@ public class MonsterTrigger : MonoBehaviour, IResettable
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log(gameObject.name + " is used " + usedThisRun);
         if (usedThisRun) return;
+        Debug.Log(other.CompareTag("Player"));
         if (!other.CompareTag("Player")) return;
 
         usedThisRun = true;
 
-        if (Random.value > activationChance)
+        var dice = Random.value;
+        Debug.Log(dice);
+        if (dice > activationChance)
             return;
 
         StartCoroutine(ActivateRoutine());
@@ -35,6 +39,7 @@ public class MonsterTrigger : MonoBehaviour, IResettable
             yield return new WaitForSeconds(preSound.length + delayAfterSound);
         }
 
+        Debug.Log(monsterObject);
         monsterObject?.SetActive(true);
     }
 

@@ -63,7 +63,6 @@ public class PlayerManager : MonoBehaviour
 
     private bool lanternOff = true;
     private bool lightsOff = true;
-    private bool seesMonster;
     private bool inEncounter;
 
     public float Anxiety => currentAnxiety;
@@ -76,7 +75,12 @@ public class PlayerManager : MonoBehaviour
     
     private float lastTime;
     private float lastFearLoopTime;
+    
+    private int visibleMonstersCount = 0;
+    private bool seesMonster;
 
+    private int hidingClosetCount;
+    
     private void Start()
     {
         if (lantern != null)
@@ -121,6 +125,17 @@ public class PlayerManager : MonoBehaviour
         }
     }
     
+    public void RegisterHiddenSource(bool hidden)
+    {
+        if (hidden)
+            hidingClosetCount++;
+        else
+            hidingClosetCount--;
+
+        hidingClosetCount = Mathf.Max(0, hidingClosetCount);
+        IsHidden = hidingClosetCount > 0;
+    }
+    
     private IEnumerator DeathRoutine()
     {
         isDead = true;
@@ -129,7 +144,6 @@ public class PlayerManager : MonoBehaviour
         if (lightningManager != null)
             lightningManager.StopLoop();
 
-        SetSeeingMonster(false);
         SetEncounter(false);
 
         if (fearLoopSource != null)
@@ -145,6 +159,27 @@ public class PlayerManager : MonoBehaviour
             gameManager.ResetGame();
     }
 
+    public void RegisterMonsterVisible(bool visible)
+    {
+        bool wasSeeing = seesMonster;
+
+        if (visible)
+            visibleMonstersCount++;
+        else
+            visibleMonstersCount--;
+
+        visibleMonstersCount = Mathf.Max(0, visibleMonstersCount);
+        seesMonster = visibleMonstersCount > 0;
+
+        if (!wasSeeing && seesMonster && Time.time >= nextSeeMonsterSfxTime)
+        {
+            if (seeMonsterSfx != null)
+                AudioManager.PlaySFX(seeMonsterSfx, transform.position);
+
+            nextSeeMonsterSfxTime = Time.time + seeMonsterSfxCooldown;
+        }
+    }
+    
     // ------------------------
     // ANXIETY (WITH DECAY)
     // ------------------------
@@ -293,19 +328,6 @@ public class PlayerManager : MonoBehaviour
     public void SetEncounter(bool value)
     {
         inEncounter = value;
-    }
-
-    public void SetSeeingMonster(bool value)
-    {
-        if (!seesMonster && value && Time.time >= nextSeeMonsterSfxTime)
-        {
-            if (seeMonsterSfx != null)
-                AudioManager.PlaySFX(seeMonsterSfx, transform.position);
-
-            nextSeeMonsterSfxTime = Time.time + seeMonsterSfxCooldown;
-        }
-
-        seesMonster = value;
     }
     
     private void UpdateFearAudio()
@@ -457,6 +479,8 @@ public class PlayerManager : MonoBehaviour
 
     public void ResetAllStates()
     {
+        visibleMonstersCount = 0;
+        seesMonster = false;
         if (lightningManager != null)
             lightningManager.StopLoop();
         isDead = false;

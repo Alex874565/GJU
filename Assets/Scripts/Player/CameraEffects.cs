@@ -4,7 +4,7 @@ public class CameraEffects : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Rigidbody rb;
-    [SerializeField] private PlayerInteract playerInteract;
+    [SerializeField] private PlayerManager playerManager;
 
     [Header("Fear")]
     [SerializeField] private float fearRiseSpeed = 2.5f;
@@ -63,10 +63,15 @@ public class CameraEffects : MonoBehaviour
 
     private void UpdateFear()
     {
-        bool lookingAtMonster = playerInteract != null && playerInteract.IsLookingAtMonster();
-        float targetFear = lookingAtMonster ? 1f : 0f;
-        float speed = lookingAtMonster ? fearRiseSpeed : fearFallSpeed;
-        fear = Mathf.MoveTowards(fear, targetFear, speed * Time.deltaTime);
+        float targetFear = playerManager != null ? playerManager.Fear01 : 0f;
+
+        float speed = targetFear > fear ? fearRiseSpeed : fearFallSpeed;
+
+        fear = Mathf.MoveTowards(
+            fear,
+            targetFear,
+            speed * Time.deltaTime
+        );
     }
 
     private void ApplyPositionEffects()
