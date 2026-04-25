@@ -24,6 +24,8 @@ public class PlayerLook : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
     private void Update()
@@ -35,44 +37,37 @@ public class PlayerLook : MonoBehaviour
         yaw += look.x * sensitivity;
         pitch -= look.y * sensitivity;
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
-
-        // Camera rotates instantly
-        yawPivot.rotation = Quaternion.Euler(0f, yaw, 0f);
-        pitchPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
     private void FixedUpdate()
     {
-        // Body slowly follows camera yaw
         Quaternion targetRotation = Quaternion.Euler(0f, yaw, 0f);
 
-        Quaternion newRotation = Quaternion.Slerp(
+        rb.MoveRotation(Quaternion.Slerp(
             rb.rotation,
             targetRotation,
             bodyFollowSpeed * Time.fixedDeltaTime
-        );
-
-        rb.MoveRotation(newRotation);
+        ));
     }
 
     private void LateUpdate()
     {
-        bodyVisual.rotation = Quaternion.Slerp(
-            bodyVisual.rotation,
-            rb.rotation,
-            bodyFollowSpeed * Time.deltaTime
-        );
+        yawPivot.rotation = Quaternion.Euler(0f, yaw, 0f);
+        pitchPivot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+
+        bodyVisual.rotation = rb.rotation;
 
         Ray ray = camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         Vector3 targetPoint = ray.origin + ray.direction * lanternAimDistance;
 
-        Vector3 dir = (targetPoint - lantern.position).normalized;
-        Quaternion targetRot = Quaternion.LookRotation(dir);
+        Vector3 dir = targetPoint - lantern.position;
 
-        lantern.rotation = Quaternion.Slerp(
-            lantern.rotation,
-            targetRot,
-            bodyFollowSpeed * Time.deltaTime
-        );
+        if (dir.sqrMagnitude > 0.001f)
+        {
+            Quaternion targetRot = Quaternion.LookRotation(dir.normalized);
+            float t = 1f - Mathf.Exp(-bodyFollowSpeed * Time.deltaTime);
+
+            lantern.rotation = Quaternion.Slerp(lantern.rotation, targetRot, t);
+        }
     }
 }

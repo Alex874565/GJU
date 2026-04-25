@@ -1,62 +1,97 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class KeyItem : MonoBehaviour
+public class KeyItem : MonoBehaviour, IInteractable
 {
-    [Header("Settings")]
-    [SerializeField] private float pickupRange = 2f;
+    [Header("References")]
+    [SerializeField] private Transform visual;
 
-    [Header("Player Reference")]
-    [SerializeField] private Transform player;
+    [Header("Lift")]
+    [SerializeField] private float liftHeight = 0.25f;
+    [SerializeField] private float moveSpeed = 5f;
 
-    private bool _playerInRange = false;
-    private bool _pickedUp = false;
+    [Header("Float")]
+    [SerializeField] private float floatAmplitude = 0.05f;
+    [SerializeField] private float floatFrequency = 2f;
 
-    private void Start()
+    [Header("Rotation")]
+    [SerializeField] private float rotationSpeed = 90f;
+    [SerializeField] private Vector3 rotationAxis = new Vector3(0.6f, 1f, 0.3f);
+    [SerializeField] private float wobbleAmount = 8f;
+    [SerializeField] private float wobbleSpeed = 2f;
+    
+    [Header("Audio")]
+    [SerializeField] private AudioClip[] pickupSounds;
+
+    private Vector3 visualBaseLocalPos;
+    private bool isHighlighted;
+    private float floatTimer;
+    private bool pickedUp;
+
+    private void Awake()
     {
-        if (player == null)
-        {
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
+        if (visual == null)
+            visual = transform;
+
+        visualBaseLocalPos = visual.localPosition;
     }
 
     private void Update()
     {
-        if (_pickedUp || player == null) return;
+        if (pickedUp) return;
 
-        float dist = Vector3.Distance(transform.position, player.position);
-        bool inRange = dist <= pickupRange;
+        Vector3 targetLocalPos = visualBaseLocalPos;
 
-        if (inRange && !_playerInRange)
+        if (isHighlighted)
         {
-            _playerInRange = true;
-            InteractPrompt.Instance?.Show("interact");
+            floatTimer += Time.deltaTime * floatFrequency;
+
+            float floatOffset = Mathf.Sin(floatTimer) * floatAmplitude;
+            targetLocalPos += Vector3.up * (liftHeight + floatOffset);
+
+            visual.localRotation = Quaternion.Slerp(
+                visual.localRotation,
+                Quaternion.Euler(
+                    Mathf.Sin(Time.time * 0.7f) * 10f,
+                    visual.localEulerAngles.y,
+                    Mathf.Cos(Time.time * 0.6f) * 10f
+                ),
+                Time.deltaTime * 2f
+            );
         }
-        else if (!inRange && _playerInRange)
-        {
-            _playerInRange = false;
+
+        visual.localPosition = Vector3.Lerp(
+            visual.localPosition,
+            targetLocalPos,
+            moveSpeed * Time.deltaTime
+        );
+    }
+
+    public void ChangeHighlight(bool highlighted)
+    {
+        if (pickedUp) return;
+
+        isHighlighted = highlighted;
+
+        if (highlighted)
+            InteractPrompt.Instance?.Show("Pick Up");
+        else
             InteractPrompt.Instance?.Hide();
-        }
-
-        if (_playerInRange && Keyboard.current.eKey.wasPressedThisFrame)
-        {
-            PickUp();
-        }
     }
 
-    private void PickUp()
+    public void Interact(PlayerInteract player)
     {
-        _pickedUp = true;
-        _playerInRange = false;
+        if (pickedUp) return;
+
+        pickedUp = true;
+        isHighlighted = false;
+
         InteractPrompt.Instance?.Hide();
-        PlayerInventory.Instance?.PickUpKey();
-        gameObject.SetActive(false);
-    }
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, pickupRange);
+        if (pickupSounds != null && pickupSounds.Length > 0)
+            AudioManager.PlaySFX(pickupSounds, transform.position);
+
+        PlayerInventory.Instance?.PickUpKey();
+
+        gameObject.SetActive(false);
     }
 }

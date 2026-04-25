@@ -98,7 +98,6 @@ public class InputManager : MonoBehaviour
         clickAction = playerInput.actions["Attack"];
         interactAction = playerInput.actions["Interact"];
 
-        clickAction.performed += OnClickPerformed;
         interactAction.performed += OnInteractPerformed;
 
         Debug.Log("[InputManager] Interact găsit: " + interactAction.name);
@@ -106,9 +105,6 @@ public class InputManager : MonoBehaviour
 
     private void OnDisable()
     {
-        if (clickAction != null)
-            clickAction.performed -= OnClickPerformed;
-
         if (interactAction != null)
             interactAction.performed -= OnInteractPerformed;
     }
@@ -118,16 +114,16 @@ public class InputManager : MonoBehaviour
         Movement = movementAction.ReadValue<Vector2>();
         Look = lookAction.ReadValue<Vector2>();
 
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            OnClickPressed?.Invoke();
+
         if (interactAction != null && interactAction.WasPressedThisFrame())
-        {
-            Debug.Log("[InputManager] Interact detectat în Update!");
             OnInteractPressed?.Invoke();
-        }
     }
 
     private void OnClickPerformed(InputAction.CallbackContext ctx)
     {
-        Debug.Log("[InputManager] Attack pressed");
+        Debug.Log("[InputManager] Attack pressed, time: " + Time.time);
         OnClickPressed?.Invoke();
     }
 

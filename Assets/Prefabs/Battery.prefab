@@ -67,12 +67,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 410d3f60acca4e8d8e080f13680bce6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  visual: {fileID: 4800736949343961679}
-  liftHeight: 0.3
-  moveSpeed: 10
+  visual: {fileID: 0}
+  liftHeight: 0.25
+  moveSpeed: 5
   floatAmplitude: 0.05
   floatFrequency: 2
   rotationSpeed: 90
+  rotationAxis: {x: 0.6, y: 1, z: 0.3}
+  wobbleAmount: 8
+  wobbleSpeed: 2
+  pickupSounds:
+  - {fileID: 8300000, guid: 0051af9271276614c84b4773b36d1603, type: 3}
+  - {fileID: 8300000, guid: 09c8f2bcd15ae284cb5f8049fff842fb, type: 3}
+  - {fileID: 8300000, guid: 4e9e75c08447c6c479b0b140a8ef2d02, type: 3}
 --- !u!1 &6248118018150536834
 GameObject:
   m_ObjectHideFlags: 0

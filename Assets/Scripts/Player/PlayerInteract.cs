@@ -33,13 +33,19 @@ public class PlayerInteract : MonoBehaviour
     private void Start()
     {
         if (InputManager.Instance != null)
-            InputManager.Instance.OnClickPressed += Interact;
+        {
+            InputManager.Instance.OnClickPressed += ToggleLantern;
+            InputManager.Instance.OnInteractPressed += Interact;
+        }
     }
 
     private void OnDestroy()
     {
         if (InputManager.Instance != null)
-            InputManager.Instance.OnClickPressed -= Interact;
+        {
+            InputManager.Instance.OnClickPressed -= ToggleLantern;
+            InputManager.Instance.OnInteractPressed -= Interact;
+        }
     }
 
     private void Update()
@@ -177,9 +183,7 @@ public class PlayerInteract : MonoBehaviour
 
     private void Interact()
     {
-        if (currentInteractable == null)
-            lantern.ToggleOnOff();
-        else
+        if(currentInteractable != null)
             currentInteractable.Interact(this);
     }
 
@@ -215,5 +219,17 @@ public class PlayerInteract : MonoBehaviour
             Gizmos.DrawLine(playerCamera.transform.position, currentMonsterCollider.bounds.center);
             Gizmos.DrawWireSphere(currentMonsterCollider.bounds.center, 0.25f);
         }
+    }
+    
+    private void ToggleLantern()
+    {
+        if (PauseMenu.Instance != null && PauseMenu.Instance.IsPaused)
+            return;
+
+        // ❌ don't allow turning ON in closet
+        if (playerManager != null && playerManager.IsHidden && lantern.IsOn == false)
+            return;
+
+        lantern.ToggleOnOff();
     }
 }

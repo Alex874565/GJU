@@ -1,13 +1,16 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
 
-public class MonsterTeleporter : MonoBehaviour
+public class MonsterTeleporter : MonoBehaviour, IResettable 
 {
-    public enum MonsterType
+    [SerializeField] private enum MonsterType
     {
         Search,
         Stalker
     }
+    
+    private Vector3 startPosition;
+    private Quaternion startRotation;
 
     [Header("Type")]
     [SerializeField] private MonsterType monsterType;
@@ -67,6 +70,9 @@ public class MonsterTeleporter : MonoBehaviour
 
     private void Awake()
     {
+        startPosition = transform.position;
+        startRotation = transform.rotation;
+        
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         
         player = p.transform;
@@ -273,6 +279,26 @@ public class MonsterTeleporter : MonoBehaviour
 
     private void EndEncounter()
     {
+        if (playerManager != null)
+            playerManager.SetEncounter(false);
+
+        gameObject.SetActive(false);
+    }
+    
+    public void ResetState()
+    {
+        hideTimer = 0f;
+        lookAwayTimer = 0f;
+        teleportTimer = Random.Range(teleportIntervalMin, teleportIntervalMax);
+        ResetLookAwayDelay();
+
+        if (agent != null)
+            agent.Warp(startPosition);
+        else
+            transform.position = startPosition;
+
+        transform.rotation = startRotation;
+
         if (playerManager != null)
             playerManager.SetEncounter(false);
 

@@ -32,6 +32,9 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float lowBatteryNoiseAmount = 0.03f;
     [SerializeField] private float criticalNoiseAmount = 0.08f;
     [SerializeField] private float noiseSpeed = 14f;
+    
+    [Header("Dust")]
+    [SerializeField] private ParticleSystem lanternDust;
 
     private int currentBatteries;
     private float currentBatteryTime;
@@ -45,25 +48,49 @@ public class Lantern : MonoBehaviour
     private float targetMultiplier = 1f;
 
     private float noiseSeed;
-    
+    private bool introComplete = false;
+
     public bool IsOn { get; private set; }
 
     public event Action OnLanternTurnedOff;
     public event Action OnLanternTurnedOn;
 
+    private bool skipNextClick = false;
+
     private void Start()
     {
         noiseSeed = Random.Range(0f, 1000f);
-
         currentBatteries = maxBatteries;
         currentBatteryTime = batteryDuration;
+
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed += OnClick;
+        else
+            Debug.LogError("InputManager null in Lantern Start");
+    }
+
+    private void OnDestroy()
+    {
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed -= OnClick;
+    }
+
+    private void OnEnable()
+    {
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed += OnClick;
+    }
+
+    private void OnDisable()
+    {
+        if (InputManager.Instance != null)
+            InputManager.Instance.OnClickPressed -= OnClick;
     }
 
     private void Update()
     {
-        if(!IsOn)
-            return;
-        
+        if (!IsOn) return;
+
         UpdateBattery();
 
         float battery01 = GetBattery01();
@@ -76,8 +103,7 @@ public class Lantern : MonoBehaviour
 
     private void UpdateBattery()
     {
-        if (currentBatteries <= 0)
-            return;
+        if (currentBatteries <= 0) return;
 
         currentBatteryTime -= Time.deltaTime;
 
@@ -164,7 +190,6 @@ public class Lantern : MonoBehaviour
                     dipIntensityMultiplierRange.x,
                     dipIntensityMultiplierRange.y
                 );
-
                 dipTimer = Random.Range(dipIntervalRange.x, dipIntervalRange.y);
             }
 
@@ -181,8 +206,7 @@ public class Lantern : MonoBehaviour
 
     private void UpdateNoise(float battery01)
     {
-        if (battery01 > lowBatteryThreshold)
-            return;
+        if (battery01 > lowBatteryThreshold) return;
 
         float noiseAmount = battery01 > criticalBatteryThreshold
             ? lowBatteryNoiseAmount
@@ -200,35 +224,23 @@ public class Lantern : MonoBehaviour
         lanternLight.intensity = baseIntensity * currentMultiplier;
     }
 
-    public void AddBattery(int amount)
+    public void SetIntroComplete()
     {
-        if (amount <= 0)
-            return;
-
-        currentBatteries = Mathf.Clamp(currentBatteries + amount, 0, maxBatteries);
-
-        if (currentBatteries > 0 && currentBatteryTime <= 0f)
-            currentBatteryTime = batteryDuration;
+        introComplete = true;
+        skipNextClick = true;
     }
 
-    public int GetCurrentBatteries()
+    private void OnClick()
     {
-        return currentBatteries;
-    }
-
-    public float GetCurrentBatteryTime01()
-    {
-        return batteryDuration > 0f ? currentBatteryTime / batteryDuration : 0f;
-    }
-
-    public float GetTotalBattery01()
-    {
-        return GetBattery01();
+        if (!introComplete) return;
+        if (skipNextClick) { skipNextClick = false; return; }
+        ToggleOnOff();
     }
 
     public void ToggleOnOff()
     {
-        if(IsOn)
+        Debug.Log("ToggleOnOff called, IsOn: " + IsOn + ", batteries: " + currentBatteries + ", batteryTime: " + currentBatteryTime);
+        if (IsOn)
             TurnOff();
         else if (currentBatteries > 0 && currentBatteryTime > 0f)
             TurnOn();
@@ -238,12 +250,33 @@ public class Lantern : MonoBehaviour
     {
         IsOn = false;
         OnLanternTurnedOff?.Invoke();
+
         lanternLight.intensity = 0f;
+
+        if (lanternDust != null)
+            lanternDust.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
     }
-    
+
     private void TurnOn()
     {
         IsOn = true;
         OnLanternTurnedOn?.Invoke();
     }
+
+    public void AddBattery(int amount)
+    {
+        if (amount <= 0) return;
+
+        currentBatteries = Mathf.Clamp(currentBatteries + amount, 0, maxBatteries);
+
+        if (currentBatteries > 0 && currentBatteryTime <= 0f)
+            currentBatteryTime = batteryDuration;
+    }
+
+    public int GetCurrentBatteries() => currentBatteries;
+
+    public float GetCurrentBatteryTime01()
+        => batteryDuration > 0f ? currentBatteryTime / batteryDuration : 0f;
+
+    public float GetTotalBattery01() => GetBattery01();
 }

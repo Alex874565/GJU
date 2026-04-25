@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class DoorController : MonoBehaviour
+public class DoorController : MonoBehaviour, IInteractable
 {
     [Header("Door State")]
     [SerializeField] private bool startOpen = false;
@@ -11,104 +10,100 @@ public class DoorController : MonoBehaviour
     [SerializeField] private float openAngle = -85f;
     [SerializeField] private float openSpeed = 5f;
 
-    [Header("Interaction")]
-    [SerializeField] private float interactRange = 2f;
-
     [Header("Dialogue")]
     [SerializeField] private DialogueData lockedDialogue;
 
-    [Header("Player Reference")]
-    [SerializeField] private Transform player;
+    [Header("Audio")]
+    [SerializeField] private AudioClip[] openSounds;
+    [SerializeField] private AudioClip[] closeSounds;
+    [SerializeField] private AudioClip[] lockedSounds;
+    [SerializeField] private AudioClip[] unlockSounds;
 
-    private bool _isOpen;
-    private bool _playerInRange = false;
-    private Quaternion _closedRotation;
-    private Quaternion _openRotation;
+    private bool isOpen;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
 
     private void Start()
     {
-        if (player == null)
-        {
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null) player = playerObj.transform;
-        }
+        closedRotation = transform.localRotation;
+        openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
 
-        _closedRotation = transform.localRotation;
-        _openRotation = _closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+        isOpen = startOpen;
 
-        _isOpen = startOpen;
-        if (_isOpen)
-            transform.localRotation = _openRotation;
+        if (isOpen)
+            transform.localRotation = openRotation;
     }
 
     private void Update()
     {
-        Quaternion targetRotation = _isOpen ? _openRotation : _closedRotation;
+        Quaternion targetRotation = isOpen ? openRotation : closedRotation;
+
         transform.localRotation = Quaternion.Slerp(
             transform.localRotation,
             targetRotation,
             Time.deltaTime * openSpeed
         );
+    }
 
-        if (player == null) return;
-
-        float dist = Vector3.Distance(transform.position, player.position);
-        bool inRange = dist <= interactRange;
-
-        if (inRange && !_playerInRange)
-        {
-            _playerInRange = true;
-            InteractPrompt.Instance?.Show("interact");
-        }
-        else if (!inRange && _playerInRange)
-        {
-            _playerInRange = false;
+    public void ChangeHighlight(bool highlighted)
+    {
+        if (highlighted)
+            InteractPrompt.Instance?.Show("Interact");
+        else
             InteractPrompt.Instance?.Hide();
-        }
+    }
 
-        if (_playerInRange && Keyboard.current.eKey.wasPressedThisFrame)
-        {
-            TryInteract();
-        }
+    public void Interact(PlayerInteract player)
+    {
+        TryInteract();
     }
 
     private void TryInteract()
     {
-        Debug.Log($"TryInteract — isLocked: {isLocked}, HasKey: {PlayerInventory.Instance?.HasKey}");
-
         if (isLocked)
         {
             if (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey)
             {
                 PlayerInventory.Instance.UseKey();
                 isLocked = false;
+
+                if (unlockSounds != null && unlockSounds.Length > 0)
+                    AudioManager.PlaySFX(unlockSounds, transform.position);
+
                 ToggleDoor();
             }
             else
             {
-                Debug.Log("Playing locked dialogue");
+                if (lockedSounds != null && lockedSounds.Length > 0)
+                    AudioManager.PlaySFX(lockedSounds, transform.position);
+
                 DialogueManager.Instance?.PlayDialogue(lockedDialogue);
             }
+
+            return;
         }
-        else
-        {
-            ToggleDoor();
-        }
+
+        ToggleDoor();
     }
 
     public void ToggleDoor()
     {
-        _isOpen = !_isOpen;
+        isOpen = !isOpen;
+
+        if (isOpen)
+        {
+            if (openSounds != null && openSounds.Length > 0)
+                AudioManager.PlaySFX(openSounds, transform.position);
+        }
+        else
+        {
+            if (closeSounds != null && closeSounds.Length > 0)
+                AudioManager.PlaySFX(closeSounds, transform.position);
+        }
     }
 
     public bool IsOpen()
     {
-        return _isOpen;
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(transform.position, interactRange);
+        return isOpen;
     }
 }
