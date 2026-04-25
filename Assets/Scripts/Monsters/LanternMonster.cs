@@ -305,6 +305,6 @@ public class LanternMonster : MonoBehaviour, IResettable
         appearDelay = Random.Range(minAppearDelay, maxAppearDelay);
 
         monsterVisual?.SetActive(false);
-        gameObject.SetActive(true);
+        gameObject.SetActive(false);
     }
 }

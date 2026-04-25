@@ -20,8 +20,11 @@ public class PlayerLook : MonoBehaviour
     private float yaw;
     private float pitch;
 
+    private Quaternion lanternSmoothedRotation;
+    
     private void Start()
     {
+        lanternSmoothedRotation = lantern.rotation;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -65,9 +68,16 @@ public class PlayerLook : MonoBehaviour
         if (dir.sqrMagnitude > 0.001f)
         {
             Quaternion targetRot = Quaternion.LookRotation(dir.normalized);
+
             float t = 1f - Mathf.Exp(-bodyFollowSpeed * Time.deltaTime);
 
-            lantern.rotation = Quaternion.Slerp(lantern.rotation, targetRot, t);
+            lanternSmoothedRotation = Quaternion.Slerp(
+                lanternSmoothedRotation,
+                targetRot,
+                t
+            );
+
+            lantern.rotation = lanternSmoothedRotation;
         }
     }
 }

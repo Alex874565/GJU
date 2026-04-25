@@ -7,6 +7,9 @@ public class DialogueLine
 {
     [TextArea(2, 4)]
     public string text;
+
+    public AudioClip voiceover;
+
     public float displayDuration = 3f;
     public float typewriterSpeed = 0.04f;
 }

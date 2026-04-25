@@ -46,6 +46,8 @@ public class Lantern : MonoBehaviour
     [SerializeField] private float flickerSoundChance = 0.5f;
     [SerializeField] private float flickerSoundCooldown = 0.05f;
     [SerializeField] private int maxSimultaneousCrackles = 2;
+    
+    public bool InputLocked { get; set; }
 
     private int activeCrackles;
 
@@ -63,29 +65,23 @@ public class Lantern : MonoBehaviour
     private float targetMultiplier = 1f;
 
     private float noiseSeed;
-    private bool introComplete = false;
 
     public bool IsOn { get; private set; }
 
     public event Action OnLanternTurnedOff;
     public event Action OnLanternTurnedOn;
 
-    private bool skipNextClick = false;
-
     private void Start()
     {
         noiseSeed = Random.Range(0f, 1000f);
         currentBatteries = maxBatteries;
         currentBatteryTime = batteryDuration;
-    }
-    
-    private void OnEnable()
-    {
+        
         if (InputManager.Instance != null)
             InputManager.Instance.OnClickPressed += OnClick;
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         if (InputManager.Instance != null)
             InputManager.Instance.OnClickPressed -= OnClick;
@@ -270,21 +266,14 @@ public class Lantern : MonoBehaviour
         lanternLight.intensity = baseIntensity * currentMultiplier;
     }
 
-    public void SetIntroComplete()
-    {
-        introComplete = true;
-        skipNextClick = true;
-    }
-
     private void OnClick()
     {
-        if (!introComplete) return;
-        if (skipNextClick) { skipNextClick = false; return; }
         ToggleOnOff();
     }
 
     public void ToggleOnOff()
     {
+        if (InputLocked) return;
         Debug.Log("ToggleOnOff called, IsOn: " + IsOn + ", batteries: " + currentBatteries + ", batteryTime: " + currentBatteryTime);
         if (IsOn)
             TurnOff();

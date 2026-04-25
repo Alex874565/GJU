@@ -5,6 +5,8 @@ public class PlayerManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Lantern lantern;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private LightningManager lightningManager;
 
     [Header("Anxiety")]
     [SerializeField] private float anxietyGainDarkness = 8f;
@@ -48,6 +50,12 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float maxVolumeWobble = 0.12f;
     [SerializeField] private float wobbleSpeed = 10f;
     
+    [Header("Death")]
+    [SerializeField] private CutscenePlayer deathCutscene;
+    [SerializeField] private float deathAnxietyThreshold = 100f;
+
+    private bool isDead;
+    
     private float fearLoopVolumeBeforePause;
     
     public bool IsLanternOff => lanternOff;
@@ -86,13 +94,24 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        if (inputLocked) return;
+        if (inputLocked || isDead) return;
+
         UpdateAnxiety();
         UpdateFear();
         UpdateFearAudio();
         UpdateHeartbeatAudio();
+
+        CheckDeath();
     }
 
+    private void CheckDeath()
+    {
+        if (isDead) return;
+
+        if (currentAnxiety >= deathAnxietyThreshold)
+            StartCoroutine(DeathRoutine());
+    }
+    
     private void OnDestroy()
     {
         if (lantern != null)
@@ -100,6 +119,30 @@ public class PlayerManager : MonoBehaviour
             lantern.OnLanternTurnedOff -= HandleLanternTurnedOff;
             lantern.OnLanternTurnedOn -= HandleLanternTurnedOn;
         }
+    }
+    
+    private IEnumerator DeathRoutine()
+    {
+        isDead = true;
+        inputLocked = true;
+
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+
+        SetSeeingMonster(false);
+        SetEncounter(false);
+
+        if (fearLoopSource != null)
+            fearLoopSource.Stop();
+
+        if (heartbeatSource != null)
+            heartbeatSource.Stop();
+
+        if (deathCutscene != null)
+            yield return StartCoroutine(deathCutscene.PlayRoutine());
+
+        if (gameManager != null)
+            gameManager.ResetGame();
     }
 
     // ------------------------
@@ -195,9 +238,9 @@ public class PlayerManager : MonoBehaviour
                 Time.deltaTime * 5f
             );
 
-            heartbeatSource.volume = Mathf.Lerp(
-                heartbeatSource.volume,
-                targetVolume * SettingsController.GetSFXVolume(),
+            heartbeatSource.pitch = Mathf.Lerp(
+                heartbeatSource.pitch,
+                targetPitch,
                 Time.deltaTime * 5f
             );
         }
@@ -291,7 +334,7 @@ public class PlayerManager : MonoBehaviour
 
             fearLoopSource.volume = Mathf.Lerp(
                 fearLoopSource.volume,
-                targetVolume * SettingsController.GetSFXVolume(),
+                targetVolume,
                 Time.deltaTime * 6f
             );
         }
@@ -414,6 +457,10 @@ public class PlayerManager : MonoBehaviour
 
     public void ResetAllStates()
     {
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+        isDead = false;
+        inputLocked = false;
         nextSeeMonsterSfxTime = 0f;
         currentAnxiety = 0f;
         currentFear = 0f;

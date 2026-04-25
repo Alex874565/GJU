@@ -31,6 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DialogueData introDialogue;
     [SerializeField] private DialogueData beforeFlashlightDialogue;
     [SerializeField] private DialogueData afterFlashlightDialogue;
+    [SerializeField] private DialogueData repeatRunDialogue;
 
     [Header("Click Prompt")]
     [SerializeField] private GameObject clickPromptRoot;
@@ -44,6 +45,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private Lantern lantern;
 
+    private Coroutine resetRoutine;
+    private bool isResetting;
+    
     private bool mouseClicked = false;
 
     private void Awake()
@@ -58,79 +62,96 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //ResetGame();
+        ResetGame();
     }
 
     [ContextMenu("Next Run / Reset Game")]
     public void ResetGame()
     {
-        StartCoroutine(ResetGameRoutine());
+        if (isResetting) return;
+
+        resetRoutine = StartCoroutine(ResetGameRoutine());
     }
 
     private IEnumerator ResetGameRoutine()
     {
+        isResetting = true;
+
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+
         runNo++;
+
         playerTransform.position = introCutscene.transform.position;
         playerTransform.rotation = introCutscene.transform.rotation;
         playerManager.ResetAllStates();
 
-        // STOP all input
+        lantern.InputLocked = true;
         playerMovement.inputLocked = true;
         playerManager.inputLocked = true;
 
-        // 1.First lightning
-        if (thunderDelay > 0f)
-            yield return new WaitForSeconds(thunderDelay);
-        if (lightningManager != null)
-            yield return StartCoroutine(lightningManager.StrikeOnce());
-        yield return new WaitForSeconds(afterThunderDelay);
-
-        // 2.Cutscene
         if (runNo == 1)
+        {
             ActivateDefaultEnvironment();
+
+            foreach (var r in resettables)
+                r.ResetState();
+
+            yield return introCutscene.PlayRoutine();
+            yield return new WaitForSeconds(afterCutsceneDelay);
+            if (lightningManager != null)
+                lightningManager.StartLoop();
+
+            if (introDialogue != null)
+            {
+                dialogueManager.PlayDialogue(introDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+
+            if (beforeFlashlightDialogue != null)
+            {
+                dialogueManager.PlayDialogue(beforeFlashlightDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+
+            lantern.InputLocked = false;
+            yield return StartCoroutine(WaitForFlashlightClick());
+
+            if (afterFlashlightDialogue != null)
+            {
+                dialogueManager.PlayDialogue(afterFlashlightDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+        }
         else
+        {
             ActivateRandomEnvironment();
 
-        foreach (var r in resettables)
-            r.ResetState();
+            foreach (var r in resettables)
+                r.ResetState();
 
-        yield return introCutscene.PlayRoutine();
-        yield return new WaitForSeconds(afterCutsceneDelay);
+            yield return introCutscene.PlayRoutine();
+            
+            yield return new WaitForSeconds(afterCutsceneDelay);
+            if (lightningManager != null)
+                lightningManager.StartLoop();
 
-        // 3.Intro dialogue
-        if (introDialogue != null)
-        {
-            dialogueManager.PlayDialogue(introDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            if (repeatRunDialogue != null)
+            {
+                dialogueManager.PlayDialogue(repeatRunDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
         }
 
-        // 4.Flashlight dialogue
-        if (beforeFlashlightDialogue != null)
-        {
-            dialogueManager.PlayDialogue(beforeFlashlightDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
-        }
-
-        // 5.Prompt click to turn on flashlight
-        yield return StartCoroutine(WaitForFlashlightClick());
-
-        // 6.Flashlight is on
-        playerManager.ToggleLantern(true);
-
-        // 7.After flashlight dialogue
-        if (afterFlashlightDialogue != null)
-        {
-            dialogueManager.PlayDialogue(afterFlashlightDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
-        }
-
-        // 8.Game Start
         playerMovement.inputLocked = false;
         playerManager.inputLocked = false;
-        lantern.SetIntroComplete();
+        lantern.InputLocked = false;
+        
+        isResetting = false;
     }
 
     IEnumerator WaitForFlashlightClick()

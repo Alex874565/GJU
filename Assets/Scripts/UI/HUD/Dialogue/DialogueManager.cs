@@ -6,6 +6,10 @@ using UnityEngine.UI;
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance { get; private set; }
+    
+    [Header("Audio")]
+    [SerializeField] private AudioSource voiceSource;
+    [SerializeField] private float voiceVolume = 1f;
 
     [Header("References")]
     public TextMeshProUGUI dialogueText;
@@ -26,6 +30,12 @@ public class DialogueManager : MonoBehaviour
         }
         Instance = this;
         canvasGroup.alpha = 0f;
+    }
+    
+    private void Start()
+    {
+        if (voiceSource != null && AudioManager.Instance != null)
+            AudioManager.Instance.RegisterManagedLoop(voiceSource);
     }
 
     public void PlayDialogue(DialogueData data)
@@ -48,19 +58,42 @@ public class DialogueManager : MonoBehaviour
     IEnumerator PlaySequence(DialogueLine[] lines)
     {
         isPlaying = true;
+
         foreach (DialogueLine line in lines)
         {
             dialogueText.text = "";
 
             yield return StartCoroutine(FadeCanvas(0f, 1f, fadeInDuration));
+
+            if (line.voiceover != null && voiceSource != null)
+            {
+                voiceSource.Stop();
+                voiceSource.clip = line.voiceover;
+                voiceSource.loop = false;
+                voiceSource.spatialBlend = 0f;
+                voiceSource.volume = SettingsController.GetSFXVolume() * voiceVolume;
+                voiceSource.Play();
+            }
+
             yield return StartCoroutine(Typewrite(line));
-            yield return new WaitForSeconds(line.displayDuration);
+
+            float waitTime = line.displayDuration;
+
+            if (line.voiceover != null)
+                waitTime = Mathf.Max(waitTime, line.voiceover.length);
+
+            yield return new WaitForSeconds(waitTime);
+
+            if (voiceSource != null)
+                voiceSource.Stop();
+
             yield return StartCoroutine(FadeCanvas(1f, 0f, fadeOutDuration));
 
             dialogueText.text = "";
 
             yield return new WaitForSeconds(0.2f);
         }
+
         isPlaying = false;
     }
 

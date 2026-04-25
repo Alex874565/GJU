@@ -3,6 +3,8 @@ using System.Collections;
 
 public class LightningManager : MonoBehaviour
 {
+    [SerializeField] private bool startLoopOnStart = false;
+    
     [Header("Lightning Lights")]
     [SerializeField] private Light[] lightningLights;
 
@@ -38,18 +40,24 @@ public class LightningManager : MonoBehaviour
             if (light == null) continue;
             light.enabled = false;
         }
+
+        if (startLoopOnStart)
+            StartLoop();
+    }
+
+    public void StartLoop()
+    {
+        StopLoop();
         lightningLoopCoroutine = StartCoroutine(LightningLoop());
     }
 
     public void StopLoop()
     {
         if (lightningLoopCoroutine != null)
+        {
             StopCoroutine(lightningLoopCoroutine);
-    }
-
-    public void StartLoop()
-    {
-        lightningLoopCoroutine = StartCoroutine(LightningLoop());
+            lightningLoopCoroutine = null;
+        }
     }
 
     private IEnumerator LightningLoop()
