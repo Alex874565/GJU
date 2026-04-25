@@ -43,6 +43,9 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 targetVelocity;
 
     public Surface WalkingSurface;
+
+    public bool inputLocked = false;
+
     
     private void Start()
     {
@@ -53,6 +56,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         if (InputManager.Instance == null) return;
+        if (inputLocked) return;
 
         Vector2 input = InputManager.Instance.Movement;
 

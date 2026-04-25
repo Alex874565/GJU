@@ -61,7 +61,9 @@ public class PlayerManager : MonoBehaviour
     public float Anxiety => currentAnxiety;
     public float Anxiety01 => currentAnxiety / 100f;
     public float Fear01 => currentFear;
-    
+
+    public bool inputLocked = false;
+
     public bool IsHidden { get; private set; }
     
     private float lastTime;
@@ -84,6 +86,7 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
+        if (inputLocked) return;
         UpdateAnxiety();
         UpdateFear();
         UpdateFearAudio();
@@ -374,10 +377,15 @@ public class PlayerManager : MonoBehaviour
     {
         lanternOff = true;
     }
-    
+
     public void ToggleLantern(bool value)
     {
-        lanternOff = value;
+        if (lantern == null) return;
+
+        if (value && !lantern.IsOn)
+            lantern.ToggleOnOff();
+        else if (!value && lantern.IsOn)
+            lantern.ToggleOnOff();
     }
 
     public void SetHidden(bool value)
