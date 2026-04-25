@@ -45,7 +45,7 @@ public class ButtonFlicker : MonoBehaviour
     {
         if (crackleClips == null || crackleClips.Length == 0)
             return;
-        
+
         AudioClip clip = crackleClips[Random.Range(0, crackleClips.Length)];
 
         float volume = Mathf.Lerp(0.1f, 0.5f, intensity);
@@ -53,7 +53,7 @@ public class ButtonFlicker : MonoBehaviour
         // 🔥 UI = slightly higher & sharper
         float pitch = Random.Range(1.05f, 1.3f);
 
-        AudioManager.PlayUISFX(clip, volume * crackleVolume, pitch);
+        AudioManager.PlaySFXWithPitch(clip, transform.position, volume, pitch);
     }
 
     void SetAlpha(float alpha)

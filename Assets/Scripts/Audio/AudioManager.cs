@@ -93,6 +93,22 @@ public class AudioManager : MonoBehaviour
 
         return sfxPool[0];
     }
+    
+    public static void PlayUISFX(AudioClip clip, float volumeMultiplier, float pitch)
+    {
+        if (Instance == null || clip == null) return;
+        if (Instance.isPausedAudio) return;
+
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.transform.localPosition = Vector3.zero;
+        source.spatialBlend = 0f; // UI = 2D
+
+        source.pitch = pitch; // 🔥 custom pitch
+
+        source.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
+        source.PlayOneShot(clip);
+    }
 
     public void RegisterManagedLoop(AudioSource source, float baseVolume = 1f)
     {
