@@ -1507,6 +1507,7 @@ MonoBehaviour:
   canvasGroup: {fileID: 436609553}
   fadeInDuration: 0.4
   fadeOutDuration: 0.6
+  isPlaying: 0
 --- !u!225 &436609553
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3287,6 +3288,20 @@ MonoBehaviour:
   fearRiseEncounter: 2
   fearDecay: 1.5
   currentFear: 0
+  seeMonsterSfx: {fileID: 0}
+  seeMonsterSfxCooldown: 3
+  heartbeatSource: {fileID: 0}
+  heartbeatClip: {fileID: 0}
+  heartbeatAnxietyThreshold: 35
+  highFearThreshold: 0.75
+  fearLoopSource: {fileID: 0}
+  fearLoopClip: {fileID: 0}
+  fearLoopThreshold: 0.4
+  instabilityThreshold: 0.65
+  maxPitchWobble: 0.08
+  maxVolumeWobble: 0.12
+  wobbleSpeed: 10
+  inputLocked: 0
 --- !u!114 &846126045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3429,7 +3444,19 @@ MonoBehaviour:
   yawPivot: {fileID: 1399851034}
   moveSpeed: 2
   smoothing: 8
+  surfaceFootsteps: []
+  defaultFootsteps: []
+  stepDistance: 1.7
+  minSpeedForSteps: 0.15
+  footstepVolume: 0.85
+  firstStepOffset: 0.6
+  footstepPanAmount: 0.18
+  finalStepVolumeMultiplier: 0.65
+  cameraPivot: {fileID: 0}
+  bobAmount: 0.04
+  bobReturnSpeed: 10
   WalkingSurface: 0
+  inputLocked: 0
 --- !u!54 &846126050
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6341,7 +6368,21 @@ MonoBehaviour:
   runNo: 0
   playerManager: {fileID: 846126044}
   playerTransform: {fileID: 846126052}
+  defaultEnvironment: {fileID: 0}
+  randomEnvironments: []
   introCutscene: {fileID: 2031866882}
+  lightningManager: {fileID: 0}
+  dialogueManager: {fileID: 0}
+  introDialogue: {fileID: 0}
+  beforeFlashlightDialogue: {fileID: 0}
+  afterFlashlightDialogue: {fileID: 0}
+  clickPromptRoot: {fileID: 0}
+  clickPromptText: {fileID: 0}
+  thunderDelay: 0
+  afterThunderDelay: 2
+  afterCutsceneDelay: 0.8
+  playerMovement: {fileID: 0}
+  lantern: {fileID: 0}
 --- !u!1 &1359246998
 GameObject:
   m_ObjectHideFlags: 0
@@ -10248,9 +10289,9 @@ MonoBehaviour:
   flashIntensity: 100
   minFlashes: 1
   maxFlashes: 3
-  thunderAudio: {fileID: 0}
   thunderClips: []
-  thunderDelay: 1.2
+  minThunderDelay: 0.6
+  maxThunderDelay: 2.5
   minFlashDuration: 0.12
   maxFlashDuration: 0.18
   minGapBetweenFlashes: 0.04
@@ -10343,6 +10384,7 @@ MonoBehaviour:
   lowBatteryNoiseAmount: 0.03
   criticalNoiseAmount: 0.08
   noiseSpeed: 14
+  lanternDust: {fileID: 0}
 --- !u!108 &1956194673
 Light:
   m_ObjectHideFlags: 0
@@ -11463,6 +11505,14 @@ PrefabInstance:
     - target: {fileID: 728042065193129103, guid: fe28b4da9d23fdc4994a93bec43b4e5e, type: 3}
       propertyPath: m_Name
       value: Layout 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248742264340700422, guid: fe28b4da9d23fdc4994a93bec43b4e5e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.025
+      objectReference: {fileID: 0}
+    - target: {fileID: 2248742264340700422, guid: fe28b4da9d23fdc4994a93bec43b4e5e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.811
       objectReference: {fileID: 0}
     - target: {fileID: 7506493110062417197, guid: fe28b4da9d23fdc4994a93bec43b4e5e, type: 3}
       propertyPath: m_LocalPosition.x
