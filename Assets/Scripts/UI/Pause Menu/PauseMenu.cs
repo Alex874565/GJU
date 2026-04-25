@@ -98,9 +98,13 @@ public class PauseMenu : MonoBehaviour
     IEnumerator QuitSequence()
     {
         yield return StartCoroutine(FadePanel(false));
+
         isPaused = false;
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Main Menu");
+
+        AudioManager.Instance.ResumeAudioForMainMenu();
+
+        SceneManager.LoadScene("Main Menu", LoadSceneMode.Single);
     }
 
     IEnumerator FadePanel(bool open)

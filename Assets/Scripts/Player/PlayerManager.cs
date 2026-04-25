@@ -195,10 +195,10 @@ public class PlayerManager : MonoBehaviour
                 Time.deltaTime * 5f
             );
 
-            heartbeatSource.pitch = Mathf.Lerp(
-                heartbeatSource.pitch,
-                targetPitch,
-                Time.deltaTime * 3f
+            heartbeatSource.volume = Mathf.Lerp(
+                heartbeatSource.volume,
+                targetVolume * SettingsController.GetSFXVolume(),
+                Time.deltaTime * 5f
             );
         }
         else
@@ -291,7 +291,7 @@ public class PlayerManager : MonoBehaviour
 
             fearLoopSource.volume = Mathf.Lerp(
                 fearLoopSource.volume,
-                targetVolume,
+                targetVolume * SettingsController.GetSFXVolume(),
                 Time.deltaTime * 6f
             );
         }

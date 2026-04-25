@@ -115,10 +115,12 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     IEnumerator FlickerThenAction(System.Action action)
     {
-        float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
-        yield return new WaitForSeconds(clipLength);
         if (buttonFlicker != null)
             yield return StartCoroutine(buttonFlicker.DoFlicker());
+
+        float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
+        yield return new WaitForSecondsRealtime(clipLength);
+
         action?.Invoke();
     }
 
@@ -168,7 +170,7 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
     IEnumerator LoadSceneWithDelay()
     {
         float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
-        yield return new WaitForSeconds(clipLength);
+        yield return new WaitForSecondsRealtime(clipLength);
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
     }
 

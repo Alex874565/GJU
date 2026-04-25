@@ -495,6 +495,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &78955507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2021,7 +2023,6 @@ MonoBehaviour:
   - surface: 0
     clips:
     - {fileID: 8300000, guid: 3cc7efb9e09de8547b30dca62252a71e, type: 3}
-    - {fileID: 8300000, guid: 43f9e33c6dc5d9e4ca498cfad624845a, type: 3}
     - {fileID: 8300000, guid: dcd25749cc2c5694b8d6310b4cae0588, type: 3}
     - {fileID: 8300000, guid: c084dbf6c868ee847b029b8c3f3c8489, type: 3}
     - {fileID: 8300000, guid: 830c627989e3f304fb47b89cd67789af, type: 3}
@@ -2029,7 +2030,7 @@ MonoBehaviour:
   defaultFootsteps: []
   stepDistance: 1.5
   minSpeedForSteps: 0.1
-  footstepVolume: 0.6
+  footstepVolume: 0.3
   firstStepOffset: 0.6
   footstepPanAmount: 0.05
   finalStepVolumeMultiplier: 0.3
@@ -3292,7 +3293,6 @@ Transform:
   - {fileID: 69873577}
   - {fileID: 647530880}
   - {fileID: 2068347370}
-  - {fileID: 1983282673}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &523178238
@@ -4202,6 +4202,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &654201929
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5380,6 +5382,50 @@ PrefabInstance:
       propertyPath: m_Name
       value: Lantern
       objectReference: {fileID: 0}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: batteryDuration
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: crackleClips.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: turnOnSounds.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: turnOffSounds.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'crackleClips.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'crackleClips.Array.data[1]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'crackleClips.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'crackleClips.Array.data[3]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'crackleClips.Array.data[4]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'turnOnSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: d693f6a283e0c054388682a1ec6fdaab, type: 3}
+    - target: {fileID: 5327877148948930738, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
+      propertyPath: 'turnOffSounds.Array.data[0]'
+      value: 
+      objectReference: {fileID: 8300000, guid: 136743fcb42c3ac498959bedf7252f5e, type: 3}
     - target: {fileID: 7911191633344704542, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.5
@@ -10106,6 +10152,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 970279723}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!114 &1825892191
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10680,12 +10733,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1983282672}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 522167739}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1983282674
 MonoBehaviour:
@@ -10703,6 +10756,8 @@ MonoBehaviour:
   audioFadeDuration: 0.5
   sfxPoolSize: 12
   randomPitchRange: {x: 0.92, y: 1.08}
+  mainMenuSceneName: Main Menu
+  sceneMusicFadeDuration: 0.6
 --- !u!82 &1983282675
 AudioSource:
   m_ObjectHideFlags: 0
@@ -10993,6 +11048,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 970279723}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!114 &2016457168
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12223,6 +12285,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 832575518}
     - target: {fileID: 7594813902150017290, guid: 15f6c389740bc004cb14689aaff7fb00, type: 3}
+      propertyPath: activateSound
+      value: 
+      objectReference: {fileID: 8300000, guid: f36b3686882aaff4eaecf78b30de5ca1, type: 3}
+    - target: {fileID: 7594813902150017290, guid: 15f6c389740bc004cb14689aaff7fb00, type: 3}
       propertyPath: playerManager
       value: 
       objectReference: {fileID: 356039687}
@@ -12311,3 +12377,4 @@ SceneRoots:
   - {fileID: 4567205161869024586}
   - {fileID: 114052312}
   - {fileID: 335347291}
+  - {fileID: 1983282673}
