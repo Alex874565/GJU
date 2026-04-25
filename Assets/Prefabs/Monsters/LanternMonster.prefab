@@ -98,6 +98,7 @@ GameObject:
   - component: {fileID: 7457892537006501713}
   - component: {fileID: 8731569733369529034}
   - component: {fileID: 1727083042613265565}
+  - component: {fileID: 6808954963576670935}
   m_Layer: 3
   m_Name: LanternMonster
   m_TagString: Untagged
@@ -150,16 +151,46 @@ MonoBehaviour:
   playerManager: {fileID: 0}
   playerCamera: {fileID: 0}
   monsterVisual: {fileID: 3941207653178819030}
-  animator: {fileID: 0}
   audioSource: {fileID: 0}
   jumpSound: {fileID: 0}
   minAppearDelay: 3
   maxAppearDelay: 8
-  spawnDistance: 3
+  minSpawnDistance: 2
+  maxSpawnDistance: 6
+  navMeshSampleRadius: 2
+  spawnAttempts: 20
+  waitBeforeAttack: 2
+  invisibleTimeBeforeAttack: 0.35
+  deactivateAfterAttack: 1.2
+  monsterCenterHeight: 1.6
+  overshootMultiplier: 1.15
+  clipThroughTime: 0.05
+  flickerDuration: 2
+  startHiddenTime: 0.45
+  endHiddenTime: 0.03
+  flashTimeRange: {x: 0.025, y: 0.07}
+  doubleFlashChance: 0.45
+  doubleFlashGap: 0.04
+  jitterAmount: 0.12
+  lungeDuration: 0.25
+  stopDistanceFromCamera: 0.8
+--- !u!114 &6808954963576670935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5551427327944064870}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 277a0ad15a1d4f169690785f56355921, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerManager: {fileID: 0}
+  playerCamera: {fileID: 0}
+  monsterRenderer: {fileID: 0}
   obstructionMask:
     serializedVersion: 2
     m_Bits: 0
-  spawnAttempts: 20
-  waitBeforeAttack: 2
-  deactivateAfterAttack: 1.2
-  jumpTriggerName: Jump
+  maxViewDistance: 25
+  disappearMonster: {fileID: 0}

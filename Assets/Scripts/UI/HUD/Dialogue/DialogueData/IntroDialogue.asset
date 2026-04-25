@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: "The power's out... I can\u2019t see anything..."
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04
   - text: No... no, no, no...
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04
   - text: "I can\u2019t sleep like this..."
+    voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.04

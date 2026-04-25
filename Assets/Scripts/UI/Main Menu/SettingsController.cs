@@ -2,9 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.Audio;
 
 public class SettingsController : MonoBehaviour
 {
+    [SerializeField] private AudioMixer audioMixer;
+    
     [Header("Volume")]
     public Slider sfxSlider;
     public Slider ambianceSlider;
@@ -18,6 +21,14 @@ public class SettingsController : MonoBehaviour
         LoadAmbiance();
         PopulateRefreshRates();
     }
+    
+    private void ApplyMixerVolume(string parameter, float value)
+    {
+        if (audioMixer == null) return;
+
+        float db = value <= 0.001f ? -80f : Mathf.Log10(value) * 20f;
+        audioMixer.SetFloat(parameter, db);
+    }
 
     void LoadSFX()
     {
@@ -27,6 +38,7 @@ public class SettingsController : MonoBehaviour
             sfxSlider.value = saved;
             sfxSlider.onValueChanged.AddListener(OnSFXChanged);
         }
+        ApplyMixerVolume("SFXVolume", saved);
     }
 
     void LoadAmbiance()
@@ -37,6 +49,7 @@ public class SettingsController : MonoBehaviour
             ambianceSlider.value = saved;
             ambianceSlider.onValueChanged.AddListener(OnAmbianceChanged);
         }
+        ApplyMixerVolume("AmbienceVolume", saved);
     }
 
     void PopulateRefreshRates()
@@ -57,15 +70,13 @@ public class SettingsController : MonoBehaviour
     public void OnSFXChanged(float value)
     {
         PlayerPrefs.SetFloat("SFXVolume", value);
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.RefreshVolumes();
+        ApplyMixerVolume("SFXVolume", value);
     }
 
     public void OnAmbianceChanged(float value)
     {
         PlayerPrefs.SetFloat("AmbianceVolume", value);
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.RefreshVolumes();
+        ApplyMixerVolume("AmbienceVolume", value);
     }
 
     public void OnRefreshRateChanged(int index)

@@ -229,7 +229,7 @@ public class LanternMonster : MonoBehaviour, IResettable
         if (audioSource != null && jumpSound != null)
             audioSource.PlayOneShot(jumpSound);
 
-        playerManager?.AddAnxiety(100f);
+        playerManager?.AddAnxiety(120f);
 
         Vector3 startPos = transform.position;
         
@@ -305,6 +305,6 @@ public class LanternMonster : MonoBehaviour, IResettable
         appearDelay = Random.Range(minAppearDelay, maxAppearDelay);
 
         monsterVisual?.SetActive(false);
-        gameObject.SetActive(true);
+        gameObject.SetActive(false);
     }
 }

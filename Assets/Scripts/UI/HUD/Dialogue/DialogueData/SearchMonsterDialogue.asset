@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: SearchMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I have to stop running away from my fears...
+  - text: I have hide and let it pass.
+    voiceover: {fileID: 0}
     displayDuration: 3
     typewriterSpeed: 0.04

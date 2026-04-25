@@ -1,38 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
 
-    [Header("Pause Music")]
+    [Header("Mixer Groups")]
+    [SerializeField] private AudioMixerGroup sfxMixerGroup;
+    [SerializeField] private AudioMixerGroup ambienceMixerGroup;
+    
+    [Header("Pause / Menu Music")]
     [SerializeField] private AudioSource pauseMusicSource;
+    [SerializeField] private string mainMenuSceneName = "Main Menu";
     [SerializeField] private float audioFadeDuration = 0.5f;
+    [SerializeField] private float sceneMusicFadeDuration = 0.6f;
 
     [Header("SFX Pool")]
     [SerializeField] private int sfxPoolSize = 12;
     [SerializeField] private Vector2 randomPitchRange = new Vector2(0.92f, 1.08f);
-    
-    [Header("Menu Music")]
-    [SerializeField] private string mainMenuSceneName = "Main Menu";
-    [SerializeField] private float sceneMusicFadeDuration = 0.6f;
-    
-    [Header("UI Audio")]
-    [SerializeField] private AudioSource uiSource;
 
     private readonly List<AudioSource> sfxPool = new();
     private readonly List<AudioSource> pausedSfxSources = new();
-    private readonly List<AudioSource> managedLoopSources = new();
-    private readonly Dictionary<AudioSource, float> loopSourceVolumes = new();
 
-    public void RegisterManagedLoop(AudioSource source)
-    {
-        if (source == null) return;
-        if (!managedLoopSources.Contains(source))
-            managedLoopSources.Add(source);
-    }
+    private readonly List<AudioSource> managedSources = new();
+    private readonly Dictionary<AudioSource, float> managedSourceVolumes = new();
 
     private Coroutine audioFadeRoutine;
     private bool isPausedAudio;
@@ -53,15 +47,14 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        ApplyAll();
-
         if (pauseMusicSource != null)
         {
+            pauseMusicSource.outputAudioMixerGroup = ambienceMixerGroup;
             pauseMusicSource.loop = true;
 
             if (SceneManager.GetActiveScene().name == mainMenuSceneName)
             {
-                pauseMusicSource.volume = SettingsController.GetAmbianceVolume();
+                pauseMusicSource.volume = 1f;
                 pauseMusicSource.Play();
             }
             else
@@ -82,6 +75,9 @@ public class AudioManager : MonoBehaviour
             AudioSource source = obj.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.spatialBlend = 0f;
+            source.volume = 1f;
+
+            source.outputAudioMixerGroup = sfxMixerGroup;
 
             sfxPool.Add(source);
         }
@@ -91,53 +87,58 @@ public class AudioManager : MonoBehaviour
     {
         foreach (AudioSource source in sfxPool)
         {
-            if (!source.isPlaying)
+            if (source != null && !source.isPlaying)
                 return source;
         }
 
         return sfxPool[0];
     }
-
-    public void ApplyAll()
+    
+    public static void PlayUISFX(AudioClip clip, float volumeMultiplier, float pitch)
     {
-        float sfxVolume = isPausedAudio ? 0f : SettingsController.GetSFXVolume();
-        float musicVolume = isPausedAudio ? SettingsController.GetAmbianceVolume() : 0f;
+        if (Instance == null || clip == null) return;
+        if (Instance.isPausedAudio) return;
 
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.transform.localPosition = Vector3.zero;
+        source.spatialBlend = 0f; // UI = 2D
+
+        source.pitch = pitch; // 🔥 custom pitch
+
+        source.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
+        source.PlayOneShot(clip);
+    }
+
+    public void RegisterManagedLoop(AudioSource source, float baseVolume = 1f)
+    {
+        if (source == null) return;
+
+        if (!managedSources.Contains(source))
+            managedSources.Add(source);
+
+        managedSourceVolumes[source] = baseVolume;
+        source.volume = baseVolume;
+        source.playOnAwake = false;
+    }
+
+    public void RefreshVolumes()
+    {
         foreach (AudioSource source in sfxPool)
         {
             if (source != null)
-                source.volume = sfxVolume;
+                source.volume = isPausedAudio ? 0f : 1f;
         }
 
-        if (pauseMusicSource != null)
-            pauseMusicSource.volume = musicVolume;
-    }
-
-    public IEnumerator FadeMenuMusic(bool fadeIn)
-    {
-        float target = fadeIn ? SettingsController.GetAmbianceVolume() : 0f;
-
-        if (fadeIn && !pauseMusicSource.isPlaying)
-            pauseMusicSource.UnPause();
-
-        float start = pauseMusicSource.volume;
-        float timer = 0f;
-
-        while (timer < sceneMusicFadeDuration)
+        foreach (AudioSource source in managedSources)
         {
-            timer += Time.unscaledDeltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, timer / sceneMusicFadeDuration);
+            if (source == null) continue;
 
-            pauseMusicSource.volume = Mathf.Lerp(start, target, t);
-            yield return null;
+            float baseVolume = managedSourceVolumes.TryGetValue(source, out float v) ? v : 1f;
+            source.volume = isPausedAudio ? 0f : baseVolume;
         }
-
-        pauseMusicSource.volume = target;
-
-        if (!fadeIn)
-            pauseMusicSource.Pause();
     }
-    
+
     public void SetPausedAudio(bool paused)
     {
         isPausedAudio = paused;
@@ -152,17 +153,13 @@ public class AudioManager : MonoBehaviour
         }
         else
         {
-            SetSfxPoolVolume(0f);
-
-            foreach (var src in managedLoopSources)
+            foreach (AudioSource source in managedSources)
             {
-                if (src != null)
-                    src.UnPause();
+                if (source != null)
+                    source.UnPause();
             }
 
-            SetLoopVolumes(0f);
             ResumeAllSFX();
-
             audioFadeRoutine = StartCoroutine(FadePauseAudio(false));
         }
     }
@@ -170,13 +167,12 @@ public class AudioManager : MonoBehaviour
     private IEnumerator FadePauseAudio(bool paused)
     {
         float sfxStart = GetCurrentSfxVolume();
-        float sfxTarget = paused ? 0f : SettingsController.GetSFXVolume();
+        float sfxTarget = paused ? 0f : 1f;
 
         float musicStart = pauseMusicSource != null ? pauseMusicSource.volume : 0f;
-        float musicTarget = paused ? SettingsController.GetAmbianceVolume() : 0f;
+        float musicTarget = paused ? 1f : 0f;
 
-        if (paused)
-            CacheLoopVolumes();
+        CacheManagedVolumes();
 
         if (pauseMusicSource != null && paused)
         {
@@ -194,74 +190,99 @@ public class AudioManager : MonoBehaviour
             float t = Mathf.SmoothStep(0f, 1f, timer / audioFadeDuration);
 
             SetSfxPoolVolume(Mathf.Lerp(sfxStart, sfxTarget, t));
+            SetManagedVolumes(paused ? 1f - t : t);
 
             if (pauseMusicSource != null)
                 pauseMusicSource.volume = Mathf.Lerp(musicStart, musicTarget, t);
-
-            SetLoopVolumes(paused ? 1f - t : t);
 
             yield return null;
         }
 
         SetSfxPoolVolume(sfxTarget);
+        SetManagedVolumes(paused ? 0f : 1f);
 
         if (pauseMusicSource != null)
         {
             pauseMusicSource.volume = musicTarget;
+
             if (!paused)
                 pauseMusicSource.Pause();
         }
 
-        SetLoopVolumes(paused ? 0f : 1f);
-
         if (paused)
         {
-            foreach (var src in managedLoopSources)
+            foreach (AudioSource source in managedSources)
             {
-                if (src != null && src.isPlaying)
-                    src.Pause();
+                if (source != null && source.isPlaying)
+                    source.Pause();
             }
         }
     }
-    
-    public static void PlaySFX(AudioClip clip, Vector3 position, float volumeMultiplier)
+
+    public IEnumerator FadeMenuMusic(bool fadeIn)
     {
-        if (Instance == null || clip == null) return;
-        if (Instance.isPausedAudio) return;
+        if (pauseMusicSource == null)
+            yield break;
 
-        AudioSource source = Instance.GetFreeSFXSource();
+        float target = fadeIn ? 1f : 0f;
 
-        source.transform.position = position;
-        source.spatialBlend = 1f;
+        if (fadeIn && !pauseMusicSource.isPlaying)
+            pauseMusicSource.Play();
 
-        source.pitch = Random.Range(
-            Instance.randomPitchRange.x,
-            Instance.randomPitchRange.y
-        ) * Mathf.Lerp(1.1f, 0.85f, volumeMultiplier);
+        float start = pauseMusicSource.volume;
+        float timer = 0f;
 
-        float baseVolume = SettingsController.GetSFXVolume();
-        source.volume = baseVolume * volumeMultiplier;
-
-        source.PlayOneShot(clip);
-    }
-
-    private float GetCurrentSfxVolume()
-    {
-        foreach (AudioSource source in sfxPool)
+        while (timer < sceneMusicFadeDuration)
         {
-            if (source != null)
-                return source.volume;
+            timer += Time.unscaledDeltaTime;
+            float t = Mathf.SmoothStep(0f, 1f, timer / sceneMusicFadeDuration);
+
+            pauseMusicSource.volume = Mathf.Lerp(start, target, t);
+
+            yield return null;
         }
 
-        return SettingsController.GetSFXVolume();
+        pauseMusicSource.volume = target;
+
+        if (!fadeIn)
+            pauseMusicSource.Pause();
     }
 
-    private void SetSfxPoolVolume(float volume)
+    public void ResumeAudioForMainMenu()
     {
+        isPausedAudio = false;
+
+        if (audioFadeRoutine != null)
+            StopCoroutine(audioFadeRoutine);
+
         foreach (AudioSource source in sfxPool)
         {
-            if (source != null)
-                source.volume = volume;
+            if (source == null) continue;
+
+            source.UnPause();
+            source.Stop();
+            source.volume = 1f;
+        }
+
+        foreach (AudioSource source in managedSources)
+        {
+            if (source == null) continue;
+
+            source.UnPause();
+
+            float baseVolume = managedSourceVolumes.TryGetValue(source, out float v) ? v : 1f;
+            source.volume = baseVolume;
+        }
+
+        pausedSfxSources.Clear();
+
+        if (pauseMusicSource != null)
+        {
+            pauseMusicSource.loop = true;
+            pauseMusicSource.volume = 1f;
+
+            if (!pauseMusicSource.isPlaying)
+                pauseMusicSource.Play();
         }
     }
 
@@ -277,9 +298,6 @@ public class AudioManager : MonoBehaviour
                 pausedSfxSources.Add(source);
             }
         }
-
-        CacheLoopVolumes();
-        SetLoopVolumes(1f);
     }
 
     private void ResumeAllSFX()
@@ -293,72 +311,48 @@ public class AudioManager : MonoBehaviour
         pausedSfxSources.Clear();
     }
 
-    private void CacheLoopVolumes()
+    private float GetCurrentSfxVolume()
     {
-        loopSourceVolumes.Clear();
-
-        foreach (var src in managedLoopSources)
+        foreach (AudioSource source in sfxPool)
         {
-            if (src != null)
-                loopSourceVolumes[src] = src.volume;
+            if (source != null)
+                return source.volume;
+        }
+
+        return 1f;
+    }
+
+    private void SetSfxPoolVolume(float volume)
+    {
+        foreach (AudioSource source in sfxPool)
+        {
+            if (source != null)
+                source.volume = volume;
         }
     }
 
-    private void SetLoopVolumes(float multiplier)
+    private void CacheManagedVolumes()
     {
-        foreach (var src in managedLoopSources)
+        foreach (AudioSource source in managedSources)
         {
-            if (src == null) continue;
+            if (source == null) continue;
 
-            float baseVolume = loopSourceVolumes.TryGetValue(src, out float v) ? v : src.volume;
-            src.volume = baseVolume * multiplier;
+            if (!managedSourceVolumes.ContainsKey(source))
+                managedSourceVolumes[source] = source.volume;
         }
     }
-    
-    public static void PlaySFX(AudioClip[] clips, Vector3 position, float volumeMultiplier = 1f)
+
+    private void SetManagedVolumes(float multiplier)
     {
-        if (Instance == null || clips == null || clips.Length == 0) return;
+        foreach (AudioSource source in managedSources)
+        {
+            if (source == null) continue;
 
-        AudioClip clip = clips[Random.Range(0, clips.Length)];
-        PlaySFX(clip, position, volumeMultiplier);
+            float baseVolume = managedSourceVolumes.TryGetValue(source, out float v) ? v : 1f;
+            source.volume = baseVolume * multiplier;
+        }
     }
-    
-    public static void PlaySFXWithPitch(AudioClip clip, Vector3 position, float volumeMultiplier, float pitch)
-    {
-        if (Instance == null || clip == null) return;
-        if (Instance.isPausedAudio) return;
 
-        AudioSource source = Instance.GetFreeSFXSource();
-
-        source.transform.position = position;
-        source.spatialBlend = 0f;
-
-        source.pitch = pitch;
-
-        source.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
-        source.PlayOneShot(clip);
-    }
-    
-    public static void PlaySFX(AudioClip clip, Vector3 position, float volumeMultiplier, float stereoPan)
-    {
-        if (Instance == null || clip == null) return;
-        if (Instance.isPausedAudio) return;
-
-        AudioSource source = Instance.GetFreeSFXSource();
-
-        source.transform.position = position;
-        source.spatialBlend = 0f;
-        source.panStereo = stereoPan;
-
-        source.pitch = Random.Range(
-            Instance.randomPitchRange.x,
-            Instance.randomPitchRange.y
-        );
-
-        source.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
-        source.PlayOneShot(clip);
-    }
-    
     public static void PlaySFX(AudioClip clip)
     {
         if (Instance == null || clip == null) return;
@@ -368,56 +362,11 @@ public class AudioManager : MonoBehaviour
 
         source.transform.localPosition = Vector3.zero;
         source.spatialBlend = 0f;
-        source.pitch = Random.Range(
-            Instance.randomPitchRange.x,
-            Instance.randomPitchRange.y
-        );
+        source.panStereo = 0f;
+        source.pitch = Random.Range(Instance.randomPitchRange.x, Instance.randomPitchRange.y);
+        source.volume = 1f;
 
-        source.volume = SettingsController.GetSFXVolume();
         source.PlayOneShot(clip);
-    }
-    
-    public void ResumeAudioForMainMenu()
-    {
-        isPausedAudio = false;
-
-        if (audioFadeRoutine != null)
-            StopCoroutine(audioFadeRoutine);
-
-        foreach (AudioSource source in sfxPool)
-        {
-            if (source == null) continue;
-
-            source.UnPause();
-            source.Stop();
-            source.volume = SettingsController.GetSFXVolume();
-        }
-
-        pausedSfxSources.Clear();
-
-        if (pauseMusicSource != null)
-        {
-            pauseMusicSource.loop = true;
-
-            if (!pauseMusicSource.isPlaying)
-                pauseMusicSource.Play();
-
-            pauseMusicSource.volume = SettingsController.GetAmbianceVolume();
-        }
-    }
-    
-    public static void PlayUISFX(AudioClip clip, float volumeMultiplier = 1f, float pitch = 1f)
-    {
-        if (Instance == null || clip == null || Instance.uiSource == null) return;
-
-        Instance.uiSource.ignoreListenerPause = true;
-        Instance.uiSource.spatialBlend = 0f;
-        Instance.uiSource.mute = false;
-        Instance.uiSource.pitch = pitch;
-        Instance.uiSource.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
-
-        // ❗ NO Stop() here → allows overlapping crackles
-        Instance.uiSource.PlayOneShot(clip);
     }
 
     public static void PlaySFX(AudioClip clip, Vector3 position)
@@ -429,17 +378,70 @@ public class AudioManager : MonoBehaviour
 
         source.transform.position = position;
         source.spatialBlend = 1f;
-        source.pitch = Random.Range(
-            Instance.randomPitchRange.x,
-            Instance.randomPitchRange.y
-        );
+        source.panStereo = 0f;
+        source.pitch = Random.Range(Instance.randomPitchRange.x, Instance.randomPitchRange.y);
+        source.volume = 1f;
 
-        source.volume = SettingsController.GetSFXVolume();
         source.PlayOneShot(clip);
     }
 
-    public void RefreshVolumes()
+    public static void PlaySFX(AudioClip clip, Vector3 position, float volumeMultiplier)
     {
-        ApplyAll();
+        if (Instance == null || clip == null) return;
+        if (Instance.isPausedAudio) return;
+
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.transform.position = position;
+        source.spatialBlend = 1f;
+        source.panStereo = 0f;
+
+        source.pitch = Random.Range(
+            Instance.randomPitchRange.x,
+            Instance.randomPitchRange.y
+        ) * Mathf.Lerp(1.1f, 0.85f, volumeMultiplier);
+
+        source.volume = volumeMultiplier;
+        source.PlayOneShot(clip);
+    }
+
+    public static void PlaySFX(AudioClip clip, Vector3 position, float volumeMultiplier, float stereoPan)
+    {
+        if (Instance == null || clip == null) return;
+        if (Instance.isPausedAudio) return;
+
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.transform.position = position;
+        source.spatialBlend = 0f;
+        source.panStereo = stereoPan;
+        source.pitch = Random.Range(Instance.randomPitchRange.x, Instance.randomPitchRange.y);
+        source.volume = volumeMultiplier;
+
+        source.PlayOneShot(clip);
+    }
+
+    public static void PlaySFXWithPitch(AudioClip clip, Vector3 position, float volumeMultiplier, float pitch)
+    {
+        if (Instance == null || clip == null) return;
+        if (Instance.isPausedAudio) return;
+
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.transform.position = position;
+        source.spatialBlend = 0f;
+        source.panStereo = 0f;
+        source.pitch = pitch;
+        source.volume = volumeMultiplier;
+
+        source.PlayOneShot(clip);
+    }
+
+    public static void PlaySFX(AudioClip[] clips, Vector3 position, float volumeMultiplier = 1f)
+    {
+        if (Instance == null || clips == null || clips.Length == 0) return;
+
+        AudioClip clip = clips[Random.Range(0, clips.Length)];
+        PlaySFX(clip, position, volumeMultiplier);
     }
 }

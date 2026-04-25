@@ -11,12 +11,14 @@ public class GameManager : MonoBehaviour
     [Header("Player")]
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private Transform playerTransform;
+    [SerializeField] private GameObject playerVisual;
+    [SerializeField] private Rigidbody playerRb;
 
     [Header("Environment Variation")]
-    [SerializeField] private GameObject defaultEnvironment; // first / lights-on version
-    [SerializeField] private GameObject[] randomEnvironments;
+    [SerializeField] private GameObject[] environments;
 
-    private GameObject currentEnvironment;
+    [Header("Timing")]
+    [SerializeField] private float delayBeforeResetAfterDeath = 1.5f;
     
     [Header("Cutscenes")]
     [SerializeField] private CutscenePlayer introCutscene;
@@ -31,6 +33,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DialogueData introDialogue;
     [SerializeField] private DialogueData beforeFlashlightDialogue;
     [SerializeField] private DialogueData afterFlashlightDialogue;
+    [SerializeField] private DialogueData repeatRunDialogue;
 
     [Header("Click Prompt")]
     [SerializeField] private GameObject clickPromptRoot;
@@ -44,93 +47,166 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private Lantern lantern;
 
+    private Coroutine resetRoutine;
+    private bool isResetting;
+    
     private bool mouseClicked = false;
 
+    private GameObject currentEnvironment;
+    
+    private Vector3 initialPlayerPosition;
+    private Quaternion initialPlayerRotation;
+    
     private void Awake()
     {
         resettables = FindObjectsOfType<MonoBehaviour>(true)
             .OfType<IResettable>()
             .ToArray();
+
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
 
+        // 🔥 STORE INITIAL WORLD TRANSFORM
+        initialPlayerPosition = playerTransform.position;
+        initialPlayerRotation = playerTransform.rotation;
     }
 
     private void Start()
     {
-        //ResetGame();
+        ResetGame();
     }
+    
+    private void ResetPlayerTransform()
+    {
+        if (playerRb != null)
+        {
+            playerRb.linearVelocity = Vector3.zero;
+            playerRb.angularVelocity = Vector3.zero;
 
-    [ContextMenu("Next Run / Reset Game")]
+            playerRb.position = initialPlayerPosition;
+            playerRb.rotation = initialPlayerRotation;
+        }
+
+        playerTransform.SetPositionAndRotation(
+            initialPlayerPosition,
+            initialPlayerRotation
+        );
+
+        Physics.SyncTransforms();
+    }
+    
+    [ContextMenu("Reset Game")]
     public void ResetGame()
     {
-        StartCoroutine(ResetGameRoutine());
+        if (isResetting) return;
+
+        resetRoutine = StartCoroutine(ResetGameRoutine());
+    }
+
+    public void ResetGameAfterDeath()
+    {
+        if (isResetting) return;
+
+        resetRoutine = StartCoroutine(ResetGameAfterDeathRoutine());
+    }
+
+    private IEnumerator ResetGameAfterDeathRoutine()
+    {
+        yield return new WaitForSeconds(delayBeforeResetAfterDeath);
+        yield return StartCoroutine(ResetGameRoutine());
     }
 
     private IEnumerator ResetGameRoutine()
     {
+        isResetting = true;
+
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+
         runNo++;
-        playerTransform.position = introCutscene.transform.position;
-        playerTransform.rotation = introCutscene.transform.rotation;
+
         playerManager.ResetAllStates();
 
-        // STOP all input
+        lantern.InputLocked = true;
         playerMovement.inputLocked = true;
         playerManager.inputLocked = true;
 
-        // 1.First lightning
-        if (thunderDelay > 0f)
-            yield return new WaitForSeconds(thunderDelay);
-        if (lightningManager != null)
-            yield return StartCoroutine(lightningManager.StrikeOnce());
-        yield return new WaitForSeconds(afterThunderDelay);
-
-        // 2.Cutscene
         if (runNo == 1)
-            ActivateDefaultEnvironment();
+        {
+            ActivateRandomEnvironment();
+            
+            foreach (var r in resettables)
+                r.ResetState();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(false);
+
+            yield return introCutscene.PlayRoutine();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(true);
+            yield return new WaitForSeconds(afterCutsceneDelay);
+            if (lightningManager != null)
+                lightningManager.StartLoop();
+
+            if (introDialogue != null)
+            {
+                dialogueManager.PlayDialogue(introDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+
+            if (beforeFlashlightDialogue != null)
+            {
+                dialogueManager.PlayDialogue(beforeFlashlightDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+
+            lantern.InputLocked = false;
+            yield return StartCoroutine(WaitForFlashlightClick());
+
+            if (afterFlashlightDialogue != null)
+            {
+                dialogueManager.PlayDialogue(afterFlashlightDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
+        }
         else
+        {
             ActivateRandomEnvironment();
 
-        foreach (var r in resettables)
-            r.ResetState();
+            foreach (var r in resettables)
+                r.ResetState();
+            
+            ResetPlayerTransform();
 
-        yield return introCutscene.PlayRoutine();
-        yield return new WaitForSeconds(afterCutsceneDelay);
+            if (playerVisual != null)
+                playerVisual.SetActive(false);
 
-        // 3.Intro dialogue
-        if (introDialogue != null)
-        {
-            dialogueManager.PlayDialogue(introDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            yield return introCutscene.PlayRoutine();
+
+            if (playerVisual != null)
+                playerVisual.SetActive(true);
+            
+            yield return new WaitForSeconds(afterCutsceneDelay);
+            if (lightningManager != null)
+                lightningManager.StartLoop();
+
+            if (repeatRunDialogue != null)
+            {
+                dialogueManager.PlayDialogue(repeatRunDialogue);
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+            }
         }
 
-        // 4.Flashlight dialogue
-        if (beforeFlashlightDialogue != null)
-        {
-            dialogueManager.PlayDialogue(beforeFlashlightDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
-        }
-
-        // 5.Prompt click to turn on flashlight
-        yield return StartCoroutine(WaitForFlashlightClick());
-
-        // 6.Flashlight is on
-        playerManager.ToggleLantern(true);
-
-        // 7.After flashlight dialogue
-        if (afterFlashlightDialogue != null)
-        {
-            dialogueManager.PlayDialogue(afterFlashlightDialogue);
-            yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => !dialogueManager.isPlaying);
-        }
-
-        // 8.Game Start
         playerMovement.inputLocked = false;
         playerManager.inputLocked = false;
-        lantern.SetIntroComplete();
+        lantern.InputLocked = false;
+        
+        isResetting = false;
     }
 
     IEnumerator WaitForFlashlightClick()
@@ -179,18 +255,10 @@ public class GameManager : MonoBehaviour
 
     private void ActivateRandomEnvironment()
     {
-        if (randomEnvironments == null || randomEnvironments.Length == 0)
-        {
-            ActivateEnvironment(defaultEnvironment);
+        if (environments == null || environments.Length == 0)
             return;
-        }
 
-        GameObject chosen = randomEnvironments[Random.Range(0, randomEnvironments.Length)];
+        GameObject chosen = environments[Random.Range(0, environments.Length)];
         ActivateEnvironment(chosen);
-    }
-
-    public void ActivateDefaultEnvironment()
-    {
-        ActivateEnvironment(defaultEnvironment);
     }
 }

@@ -10,10 +10,22 @@ public class SimpleDisappearMonster : MonoBehaviour, IResettable
 
     private Coroutine lifeRoutine;
     private bool active;
+    private bool hasBeenSeen;
 
     private void OnEnable()
     {
         active = true;
+        hasBeenSeen = false;
+
+        // ❌ DON'T start routine here anymore
+    }
+
+    // 👉 Call this from your vision system / raycast / trigger
+    public void OnSeen()
+    {
+        if (!active || hasBeenSeen) return;
+
+        hasBeenSeen = true;
 
         float duration = randomizeLifetime
             ? Random.Range(lifetimeRange.x, lifetimeRange.y)
@@ -34,6 +46,7 @@ public class SimpleDisappearMonster : MonoBehaviour, IResettable
     public void ResetState()
     {
         active = false;
+        hasBeenSeen = false;
 
         if (lifeRoutine != null)
             StopCoroutine(lifeRoutine);

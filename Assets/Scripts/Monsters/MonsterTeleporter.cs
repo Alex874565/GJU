@@ -18,7 +18,7 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
     [SerializeField] private PlayerManager playerManager;
-    [SerializeField] private PlayerInteract playerInteract;
+    [SerializeField] private MonsterVisibility monsterVisibility;
 
     private Transform player;
 
@@ -26,6 +26,7 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [SerializeField] private float minDistanceToTeleport = 6f;
     [SerializeField] private float teleportIntervalMin = 1.5f;
     [SerializeField] private float teleportIntervalMax = 3f;
+    [SerializeField] private float maxVerticalDifference = 1.5f;
 
     [Header("Distance Control")]
     [SerializeField] private float minDistanceFromPlayer = 2.5f;
@@ -43,8 +44,8 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [SerializeField] private float hideWaitTime = 3f;
     private float hideTimer;
 
-    [Header("Stalker Area")]
-    [SerializeField] private Collider activeArea;
+    [Header("Stalker Area")] [SerializeField]
+    private float range = 5f;
 
     [Header("Look Away Delay (Stalker)")]
     [SerializeField] private float minLookAwayDelay = 0.2f;
@@ -65,6 +66,10 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [Header("Behind Teleport Range")]
     [SerializeField] private float behindMinDistance = 2f;
     [SerializeField] private float behindMaxDistance = 6f;
+    
+    [Header("Close Anxiety")]
+    [SerializeField] private float closeAnxietyRange = 2f;
+    [SerializeField] private float closeAnxietyGainPerSecond = 12f;
 
     private float teleportTimer;
 
@@ -72,12 +77,13 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     {
         startPosition = transform.position;
         startRotation = transform.rotation;
-        
+
+        SnapStartToNavMesh();
         GameObject p = GameObject.FindGameObjectWithTag("Player");
         
         player = p.transform;
         playerManager = player.gameObject.GetComponent<PlayerManager>();
-        playerInteract = player.gameObject.GetComponent<PlayerInteract>();
+        monsterVisibility = gameObject.GetComponent<MonsterVisibility>();
         
         teleportTimer = Random.Range(teleportIntervalMin, teleportIntervalMax);
 
@@ -92,6 +98,8 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
         if (player == null || agent == null)
             return;
 
+        UpdateCloseAnxiety();
+
         switch (monsterType)
         {
             case MonsterType.Search:
@@ -102,6 +110,17 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
                 UpdateStalkerBehavior();
                 break;
         }
+    }
+    
+    private void UpdateCloseAnxiety()
+    {
+        if (playerManager == null || player == null)
+            return;
+
+        float distance = Vector3.Distance(transform.position, player.position);
+
+        if (distance <= closeAnxietyRange)
+            playerManager.AddAnxiety(closeAnxietyGainPerSecond * Time.deltaTime);
     }
 
     // =========================
@@ -116,12 +135,12 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
 
             if (hideTimer >= hideWaitTime)
                 EndEncounter();
+
+            return;
         }
-        else
-        {
-            hideTimer = 0f;
-            HandleTeleport();
-        }
+
+        hideTimer = 0f;
+        HandleTeleport();
     }
 
     // =========================
@@ -130,17 +149,19 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
 
     private void UpdateStalkerBehavior()
     {
-        if (activeArea != null && !activeArea.bounds.Contains(player.position))
+        float distanceToPlayer = Vector3.Distance(transform.position, player.position);
+
+        if (distanceToPlayer > range)
         {
+            Debug.Log("Player is out of range, ending encounter.");
             EndEncounter();
             return;
         }
 
         bool thisMonsterIsVisible =
-            playerInteract != null &&
-            playerInteract.IsLookingAtMonster() &&
-            playerInteract.GetCurrentMonster() == transform.root;
-        
+            monsterVisibility != null &&
+            monsterVisibility.IsVisible;
+
         if (thisMonsterIsVisible)
         {
             ResetLookAwayDelay();
@@ -236,8 +257,12 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
 
                 rawTarget = transform.position + fallbackDir * step;
             }
-            
+            Debug.Log("Trying teleport target: " + rawTarget);
             if (!NavMesh.SamplePosition(rawTarget, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
+                continue;
+
+// 🚫 Reject positions too high/low
+            if (Mathf.Abs(hit.position.y - player.position.y) > maxVerticalDifference)
                 continue;
 
             float distToPlayer = Vector3.Distance(hit.position, player.position);
@@ -245,8 +270,8 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
             if (distToPlayer < minDistanceFromPlayer)
                 continue;
 
-            if (IsBlocked(hit.position))
-                continue;
+            //if (IsBlocked(hit.position))
+                //continue;
 
             TeleportTo(hit.position);
             return;
@@ -262,9 +287,44 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
         return Physics.Raycast(origin, dir, dist, obstacleMask, QueryTriggerInteraction.Ignore);
     }
 
+    private void SnapStartToNavMesh()
+    {
+        if (!NavMesh.SamplePosition(startPosition, out NavMeshHit hit, 2, NavMesh.AllAreas))
+        {
+            Debug.LogWarning($"{name} could not snap start position to NavMesh near {startPosition}");
+            return;
+        }
+
+        startPosition = hit.position;
+
+        if (agent != null)
+        {
+            agent.enabled = false;
+            transform.position = startPosition;
+            transform.rotation = startRotation;
+            agent.enabled = true;
+            agent.Warp(startPosition);
+        }
+        else
+        {
+            transform.position = startPosition;
+            transform.rotation = startRotation;
+        }
+    }
+    
     private void TeleportTo(Vector3 position)
     {
-        agent.Warp(position);
+        if (!NavMesh.SamplePosition(position, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
+        {
+            Debug.LogWarning("Warp failed: target not on NavMesh");
+            return;
+        }
+
+        agent.enabled = false;
+        transform.position = hit.position;
+        agent.enabled = true;
+
+        agent.Warp(hit.position);
 
         Vector3 lookDir = player.position - transform.position;
         lookDir.y = 0f;
@@ -292,16 +352,16 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
         teleportTimer = Random.Range(teleportIntervalMin, teleportIntervalMax);
         ResetLookAwayDelay();
 
-        if (agent != null)
-            agent.Warp(startPosition);
-        else
-            transform.position = startPosition;
+        SnapStartToNavMesh();
 
         transform.rotation = startRotation;
 
         if (playerManager != null)
             playerManager.SetEncounter(false);
 
+        if (monsterVisibility != null)
+            monsterVisibility.ClearVisibility();
+        
         gameObject.SetActive(false);
     }
 }

@@ -26,7 +26,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float footstepPanAmount = 0.18f;
     [SerializeField] private float finalStepVolumeMultiplier = 0.65f;
 
-    private bool wantsFinalLeftStep;
     private bool wasMoving;
     private bool leftStep;
 
@@ -35,6 +34,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float bobAmount = 0.04f;
     [SerializeField] private float bobReturnSpeed = 10f;
 
+    private float targetBobOffset;
     private float stepCycle;
     private Vector3 cameraBaseLocalPos;
     private float bobOffset;
@@ -108,7 +108,7 @@ public class PlayerMovement : MonoBehaviour
             if (wasMoving && !leftStep)
             {
                 PlayFootstep(true, finalStepVolumeMultiplier);
-                bobOffset = -bobAmount * 0.5f;
+                targetBobOffset = -bobAmount * 0.5f;
             }
 
             stepCycle = 0f;
@@ -127,7 +127,7 @@ public class PlayerMovement : MonoBehaviour
 
             PlayFootstep(leftStep, 1);
 
-            bobOffset = leftStep ? -bobAmount : bobAmount * 0.6f;
+            targetBobOffset = leftStep ? -bobAmount : bobAmount * 0.6f;
         }
 
         wasMoving = true;
@@ -137,7 +137,17 @@ public class PlayerMovement : MonoBehaviour
     {
         if (cameraPivot == null) return;
 
-        bobOffset = Mathf.Lerp(bobOffset, 0f, Time.deltaTime * bobReturnSpeed);
+        bobOffset = Mathf.Lerp(
+            bobOffset,
+            targetBobOffset,
+            1f - Mathf.Exp(-bobReturnSpeed * Time.deltaTime)
+        );
+
+        targetBobOffset = Mathf.Lerp(
+            targetBobOffset,
+            0f,
+            1f - Mathf.Exp(-bobReturnSpeed * Time.deltaTime)
+        );
 
         Vector3 pos = cameraBaseLocalPos;
         pos.y += bobOffset;

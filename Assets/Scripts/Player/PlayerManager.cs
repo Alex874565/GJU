@@ -5,6 +5,8 @@ public class PlayerManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Lantern lantern;
+    [SerializeField] private GameManager gameManager;
+    [SerializeField] private LightningManager lightningManager;
 
     [Header("Anxiety")]
     [SerializeField] private float anxietyGainDarkness = 8f;
@@ -48,6 +50,12 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private float maxVolumeWobble = 0.12f;
     [SerializeField] private float wobbleSpeed = 10f;
     
+    [Header("Death")]
+    [SerializeField] private CutscenePlayer deathCutscene;
+    [SerializeField] private float deathAnxietyThreshold = 100f;
+
+    private bool isDead;
+    
     private float fearLoopVolumeBeforePause;
     
     public bool IsLanternOff => lanternOff;
@@ -55,7 +63,6 @@ public class PlayerManager : MonoBehaviour
 
     private bool lanternOff = true;
     private bool lightsOff = true;
-    private bool seesMonster;
     private bool inEncounter;
 
     public float Anxiety => currentAnxiety;
@@ -68,7 +75,12 @@ public class PlayerManager : MonoBehaviour
     
     private float lastTime;
     private float lastFearLoopTime;
+    
+    private int visibleMonstersCount = 0;
+    private bool seesMonster;
 
+    private int hidingClosetCount;
+    
     private void Start()
     {
         if (lantern != null)
@@ -86,13 +98,24 @@ public class PlayerManager : MonoBehaviour
 
     private void Update()
     {
-        if (inputLocked) return;
+        if (inputLocked || isDead) return;
+
         UpdateAnxiety();
         UpdateFear();
         UpdateFearAudio();
         UpdateHeartbeatAudio();
+
+        CheckDeath();
     }
 
+    private void CheckDeath()
+    {
+        if (isDead) return;
+
+        if (currentAnxiety >= deathAnxietyThreshold)
+            StartCoroutine(DeathRoutine());
+    }
+    
     private void OnDestroy()
     {
         if (lantern != null)
@@ -101,7 +124,62 @@ public class PlayerManager : MonoBehaviour
             lantern.OnLanternTurnedOn -= HandleLanternTurnedOn;
         }
     }
+    
+    public void RegisterHiddenSource(bool hidden)
+    {
+        if (hidden)
+            hidingClosetCount++;
+        else
+            hidingClosetCount--;
 
+        hidingClosetCount = Mathf.Max(0, hidingClosetCount);
+        IsHidden = hidingClosetCount > 0;
+    }
+    
+    private IEnumerator DeathRoutine()
+    {
+        isDead = true;
+        inputLocked = true;
+
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+
+        SetEncounter(false);
+
+        if (fearLoopSource != null)
+            fearLoopSource.Stop();
+
+        if (heartbeatSource != null)
+            heartbeatSource.Stop();
+
+        if (deathCutscene != null)
+            yield return StartCoroutine(deathCutscene.PlayRoutine());
+
+        if (gameManager != null)
+            gameManager.ResetGameAfterDeath();
+    }
+
+    public void RegisterMonsterVisible(bool visible)
+    {
+        bool wasSeeing = seesMonster;
+
+        if (visible)
+            visibleMonstersCount++;
+        else
+            visibleMonstersCount--;
+
+        visibleMonstersCount = Mathf.Max(0, visibleMonstersCount);
+        seesMonster = visibleMonstersCount > 0;
+
+        if (!wasSeeing && seesMonster && Time.time >= nextSeeMonsterSfxTime)
+        {
+            if (seeMonsterSfx != null)
+                AudioManager.PlaySFX(seeMonsterSfx, transform.position);
+
+            nextSeeMonsterSfxTime = Time.time + seeMonsterSfxCooldown;
+        }
+    }
+    
     // ------------------------
     // ANXIETY (WITH DECAY)
     // ------------------------
@@ -195,9 +273,9 @@ public class PlayerManager : MonoBehaviour
                 Time.deltaTime * 5f
             );
 
-            heartbeatSource.volume = Mathf.Lerp(
-                heartbeatSource.volume,
-                targetVolume * SettingsController.GetSFXVolume(),
+            heartbeatSource.pitch = Mathf.Lerp(
+                heartbeatSource.pitch,
+                targetPitch,
                 Time.deltaTime * 5f
             );
         }
@@ -251,19 +329,6 @@ public class PlayerManager : MonoBehaviour
     {
         inEncounter = value;
     }
-
-    public void SetSeeingMonster(bool value)
-    {
-        if (!seesMonster && value && Time.time >= nextSeeMonsterSfxTime)
-        {
-            if (seeMonsterSfx != null)
-                AudioManager.PlaySFX(seeMonsterSfx, transform.position);
-
-            nextSeeMonsterSfxTime = Time.time + seeMonsterSfxCooldown;
-        }
-
-        seesMonster = value;
-    }
     
     private void UpdateFearAudio()
     {
@@ -291,7 +356,7 @@ public class PlayerManager : MonoBehaviour
 
             fearLoopSource.volume = Mathf.Lerp(
                 fearLoopSource.volume,
-                targetVolume * SettingsController.GetSFXVolume(),
+                targetVolume,
                 Time.deltaTime * 6f
             );
         }
@@ -414,6 +479,12 @@ public class PlayerManager : MonoBehaviour
 
     public void ResetAllStates()
     {
+        visibleMonstersCount = 0;
+        seesMonster = false;
+        if (lightningManager != null)
+            lightningManager.StopLoop();
+        isDead = false;
+        inputLocked = false;
         nextSeeMonsterSfxTime = 0f;
         currentAnxiety = 0f;
         currentFear = 0f;

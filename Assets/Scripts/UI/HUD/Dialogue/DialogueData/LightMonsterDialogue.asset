@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: "I can\u2019t avoid the darkness forever..."
+    voiceover: {fileID: 0}
     displayDuration: 3
     typewriterSpeed: 0.04
-  - text: I have to face it.
+  - text: I have to embrace it.
+    voiceover: {fileID: 0}
     displayDuration: 3
     typewriterSpeed: 0.04

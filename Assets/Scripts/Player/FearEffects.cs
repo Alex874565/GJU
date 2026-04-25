@@ -7,7 +7,7 @@ using Unity.Cinemachine;
 public class FearEffects : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private PlayerInteract playerInteract;
+    [SerializeField] private PlayerManager playerManager;
     [SerializeField] private Volume volume;
     [SerializeField] private CinemachineCamera cinemachineCamera;
     [SerializeField] private CinemachineImpulseSource impulseSource;
@@ -60,7 +60,7 @@ public class FearEffects : MonoBehaviour
 
     private void Update()
     {
-        bool lookingAtMonster = playerInteract != null && playerInteract.IsLookingAtMonster();
+        bool lookingAtMonster = playerManager != null && playerManager.Fear01 > 0.01f;
 
         if (lookingAtMonster && !wasLookingAtMonster && Time.time >= lastImpactTime + impactCooldown)
         {
