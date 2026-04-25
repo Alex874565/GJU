@@ -50,6 +50,8 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
     private bool activated;
     private Coroutine activationRoutine;
 
+    private bool canInteract = true;
+    
     private void Start()
     {
         ResetState();
@@ -80,23 +82,27 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
 
     public void ChangeHighlight(bool highlighted)
     {
-        if (activated) return;
-        isHighlighted = highlighted;
-        if (highlighted)
-        {
-            InteractPrompt.Instance?.Show("Activate");
-        }
-        else
+        if (!canInteract) 
         {
             InteractPrompt.Instance?.Hide();
+            return;
         }
+
+        isHighlighted = highlighted;
+
+        if (highlighted)
+            InteractPrompt.Instance?.Show("Activate");
+        else
+            InteractPrompt.Instance?.Hide();
     }
 
     public void Interact(PlayerInteract player)
     {
-        if (activated) return;
+        if (!canInteract) return;
 
+        canInteract = false;
         activated = true;
+        InteractPrompt.Instance?.Hide();
 
         if (activationRoutine != null)
             StopCoroutine(activationRoutine);
@@ -245,7 +251,7 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
     {
         activated = false;
         isHighlighted = false;
-
+        canInteract = true;
         if (activationRoutine != null)
             StopCoroutine(activationRoutine);
 

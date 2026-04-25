@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -35,6 +36,20 @@ public class Lantern : MonoBehaviour
     
     [Header("Dust")]
     [SerializeField] private ParticleSystem lanternDust;
+    
+    [Header("Audio")]
+    [SerializeField] private AudioClip[] turnOnSounds;
+    [SerializeField] private AudioClip[] turnOffSounds;
+    
+    [Header("Flicker Audio")]
+    [SerializeField] private AudioClip[] crackleClips;
+    [SerializeField] private float flickerSoundChance = 0.5f;
+    [SerializeField] private float flickerSoundCooldown = 0.05f;
+    [SerializeField] private int maxSimultaneousCrackles = 2;
+
+    private int activeCrackles;
+
+    private float nextFlickerSoundTime;
 
     private int currentBatteries;
     private float currentBatteryTime;
@@ -62,19 +77,8 @@ public class Lantern : MonoBehaviour
         noiseSeed = Random.Range(0f, 1000f);
         currentBatteries = maxBatteries;
         currentBatteryTime = batteryDuration;
-
-        if (InputManager.Instance != null)
-            InputManager.Instance.OnClickPressed += OnClick;
-        else
-            Debug.LogError("InputManager null in Lantern Start");
     }
-
-    private void OnDestroy()
-    {
-        if (InputManager.Instance != null)
-            InputManager.Instance.OnClickPressed -= OnClick;
-    }
-
+    
     private void OnEnable()
     {
         if (InputManager.Instance != null)
@@ -92,7 +96,8 @@ public class Lantern : MonoBehaviour
         if (!IsOn) return;
 
         UpdateBattery();
-
+        if (!IsOn) return;
+        
         float battery01 = GetBattery01();
 
         UpdateBaseIntensity(battery01);
@@ -117,8 +122,11 @@ public class Lantern : MonoBehaviour
             }
             else
             {
-                OnLanternTurnedOff?.Invoke();
                 currentBatteryTime = 0f;
+
+                if (IsOn)
+                    TurnOff(true); // silent or death shutdown
+
                 break;
             }
         }
@@ -190,7 +198,12 @@ public class Lantern : MonoBehaviour
                     dipIntensityMultiplierRange.x,
                     dipIntensityMultiplierRange.y
                 );
+                
+
                 dipTimer = Random.Range(dipIntervalRange.x, dipIntervalRange.y);
+
+                // 🔥 play flicker sound on dips
+                TryPlayFlickerSound();
             }
 
             if (episodeTimer <= 0f)
@@ -204,6 +217,39 @@ public class Lantern : MonoBehaviour
         currentMultiplier = Mathf.Lerp(currentMultiplier, targetMultiplier, responseSpeed * Time.deltaTime);
     }
 
+    private void TryPlayFlickerSound()
+    {
+        if (crackleClips == null || crackleClips.Length == 0)
+            return;
+
+        if (Time.time < nextFlickerSoundTime)
+            return;
+
+        if (Random.value > flickerSoundChance)
+            return;
+
+        if (activeCrackles >= maxSimultaneousCrackles)
+            return;
+
+        AudioClip clip = crackleClips[Random.Range(0, crackleClips.Length)];
+
+        float dipStrength = 1f - targetMultiplier;
+        float volume = Mathf.Lerp(0.1f, 0.6f, dipStrength);
+
+        AudioManager.PlaySFX(clip, transform.position, volume);
+
+        activeCrackles++;
+        StartCoroutine(CrackleLifetime(clip.length));
+
+        nextFlickerSoundTime = Time.time + flickerSoundCooldown;
+    }
+    
+    private IEnumerator CrackleLifetime(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        activeCrackles = Mathf.Max(0, activeCrackles - 1);
+    }
+    
     private void UpdateNoise(float battery01)
     {
         if (battery01 > lowBatteryThreshold) return;
@@ -246,12 +292,19 @@ public class Lantern : MonoBehaviour
             TurnOn();
     }
 
-    private void TurnOff()
+    private void TurnOff(bool silent = false)
     {
         IsOn = false;
         OnLanternTurnedOff?.Invoke();
 
-        lanternLight.intensity = 0f;
+        if (!silent && turnOffSounds != null && turnOffSounds.Length > 0)
+            AudioManager.PlaySFX(turnOffSounds, transform.position);
+
+        if (lanternLight != null)
+        {
+            lanternLight.intensity = 0f;
+            lanternLight.enabled = false;
+        }
 
         if (lanternDust != null)
             lanternDust.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -261,6 +314,15 @@ public class Lantern : MonoBehaviour
     {
         IsOn = true;
         OnLanternTurnedOn?.Invoke();
+
+        if (lanternLight != null)
+            lanternLight.enabled = true;
+
+        if (turnOnSounds != null && turnOnSounds.Length > 0)
+            AudioManager.PlaySFX(turnOnSounds, transform.position);
+
+        if (lanternDust != null)
+            lanternDust.Play();
     }
 
     public void AddBattery(int amount)

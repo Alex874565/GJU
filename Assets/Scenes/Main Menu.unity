@@ -407,6 +407,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &133387812
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1083,6 +1085,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &372211547
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1328,11 +1332,13 @@ MonoBehaviour:
   dashImage: {fileID: 1270238221}
   borderTop: {fileID: 2017048318}
   borderBottom: {fileID: 893820973}
+  pauseMenu: {fileID: 0}
+  isResume: 0
+  isQuitToMenu: 0
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 484500864}
   isBack: 0
-  audioSource: {fileID: 858054009}
-  buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
+  buttonPressClip: {fileID: 8300000, guid: feae89ba61f32944a85729863d23d84b, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
   hoverDuration: 0.3
@@ -1362,6 +1368,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 1332057260}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!1 &527870883
 GameObject:
   m_ObjectHideFlags: 0
@@ -1776,6 +1789,15 @@ MonoBehaviour:
   neonColor: {r: 0.78, g: 0.65, b: 0.42, a: 1}
   minTimeBetweenFlickers: 3
   maxTimeBetweenFlickers: 7
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
+  cracklePitch: {x: 0.8, y: 1.1}
+  crackleChance: 0.8
 --- !u!1 &679949983
 GameObject:
   m_ObjectHideFlags: 0
@@ -1833,11 +1855,13 @@ MonoBehaviour:
   dashImage: {fileID: 1030430738}
   borderTop: {fileID: 1349841150}
   borderBottom: {fileID: 0}
+  pauseMenu: {fileID: 0}
+  isResume: 0
+  isQuitToMenu: 0
   settingsPanel: {fileID: 140294922}
   buttonFlicker: {fileID: 679949987}
   isBack: 0
-  audioSource: {fileID: 858054009}
-  buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
+  buttonPressClip: {fileID: 8300000, guid: feae89ba61f32944a85729863d23d84b, type: 3}
   normalColor: {r: 0.69182384, g: 0.5989611, b: 0.43293375, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
   hoverDuration: 0.3
@@ -1867,6 +1891,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 869793438}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!1 &686965732
 GameObject:
   m_ObjectHideFlags: 0
@@ -2069,11 +2100,13 @@ MonoBehaviour:
   dashImage: {fileID: 341839985}
   borderTop: {fileID: 1511628882}
   borderBottom: {fileID: 0}
+  pauseMenu: {fileID: 0}
+  isResume: 0
+  isQuitToMenu: 0
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 706325953}
   isBack: 0
-  audioSource: {fileID: 858054009}
-  buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
+  buttonPressClip: {fileID: 8300000, guid: feae89ba61f32944a85729863d23d84b, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
   hoverDuration: 0.3
@@ -2095,6 +2128,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 1757226418}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!1 &762502046
 GameObject:
   m_ObjectHideFlags: 0
@@ -2551,6 +2591,8 @@ GameObject:
   m_Component:
   - component: {fileID: 890587886}
   - component: {fileID: 890587885}
+  - component: {fileID: 890587887}
+  - component: {fileID: 890587888}
   m_Layer: 0
   m_Name: AudioManager
   m_TagString: Untagged
@@ -2570,8 +2612,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e01700dc63c61f4f81eaf92097b9a54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sfxSources: []
-  ambianceSources: []
+  pauseMusicSource: {fileID: 890587887}
+  audioFadeDuration: 0.5
+  sfxPoolSize: 12
+  randomPitchRange: {x: 0.92, y: 1.08}
+  mainMenuSceneName: Main Menu
+  sceneMusicFadeDuration: 0.6
+  uiSource: {fileID: 890587888}
 --- !u!4 &890587886
 Transform:
   m_ObjectHideFlags: 0
@@ -2587,6 +2634,200 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &890587887
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890587884}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 751d8f9d044b70146b339b02843e7626, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &890587888
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890587884}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &891588826
 GameObject:
   m_ObjectHideFlags: 0
@@ -4073,8 +4314,8 @@ MonoBehaviour:
       enableFptlForForwardOpaque: 0
       enableBigTilePrepass: 0
       isFptlEnabled: 0
-  clearColorMode: 2
-  backgroundColorHDR: {r: 0.025, g: 0.07, b: 0.19, a: 0}
+  clearColorMode: 1
+  backgroundColorHDR: {r: 0, g: 0, b: 0, a: 0}
   clearDepth: 1
   volumeLayerMask:
     serializedVersion: 2
@@ -4547,11 +4788,13 @@ MonoBehaviour:
   dashImage: {fileID: 84203988}
   borderTop: {fileID: 644728669}
   borderBottom: {fileID: 608059236}
+  pauseMenu: {fileID: 0}
+  isResume: 0
+  isQuitToMenu: 0
   settingsPanel: {fileID: 140294922}
   buttonFlicker: {fileID: 1617764034}
   isBack: 1
-  audioSource: {fileID: 858054009}
-  buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
+  buttonPressClip: {fileID: 8300000, guid: feae89ba61f32944a85729863d23d84b, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
   hoverDuration: 0.3
@@ -4581,6 +4824,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 686965734}
+  crackleClips:
+  - {fileID: 8300000, guid: 7cd22fd1ef169d444bbf52ed7fcb31a9, type: 3}
+  - {fileID: 8300000, guid: d5c4bd65ec93a5b4cafa451110942a1f, type: 3}
+  - {fileID: 8300000, guid: ff9f964e7fd903749ab22f3f2c4defd6, type: 3}
+  - {fileID: 8300000, guid: d5d3bff6f088df947a68794ea166bfc4, type: 3}
+  - {fileID: 8300000, guid: 0cf9bddee1d32f140b98d5c04b9ad452, type: 3}
+  crackleVolume: 0.4
 --- !u!1 &1757226416
 GameObject:
   m_ObjectHideFlags: 0
@@ -4858,6 +5108,10 @@ MonoBehaviour:
   neonColor: {r: 0.78, g: 0.65, b: 0.42, a: 1}
   minTimeBetweenFlickers: 4
   maxTimeBetweenFlickers: 7
+  crackleClips: []
+  crackleVolume: 0.4
+  cracklePitch: {x: 0.8, y: 1.1}
+  crackleChance: 0.8
 --- !u!114 &1861272776
 MonoBehaviour:
   m_ObjectHideFlags: 0

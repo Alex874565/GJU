@@ -1699,6 +1699,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 1134988176}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &525566135
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1721,7 +1723,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 525566134}
   isBack: 0
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
@@ -1952,6 +1953,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &581671774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2350,6 +2353,10 @@ MonoBehaviour:
   neonColor: {r: 0.78, g: 0.65, b: 0.42, a: 1}
   minTimeBetweenFlickers: 4
   maxTimeBetweenFlickers: 7
+  crackleClips: []
+  crackleVolume: 0.4
+  cracklePitch: {x: 0.8, y: 1.1}
+  crackleChance: 0.8
 --- !u!114 &742703045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4988,6 +4995,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 1134988176}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &1080017768
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5010,7 +5019,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 1080017767}
   isBack: 0
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
@@ -7694,6 +7702,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonText: {fileID: 0}
+  crackleClips: []
+  crackleVolume: 0.4
 --- !u!114 &1452305245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10385,6 +10395,12 @@ MonoBehaviour:
   criticalNoiseAmount: 0.08
   noiseSpeed: 14
   lanternDust: {fileID: 0}
+  turnOnSounds: []
+  turnOffSounds: []
+  crackleClips: []
+  flickerSoundChance: 0.5
+  flickerSoundCooldown: 0.05
+  maxSimultaneousCrackles: 2
 --- !u!108 &1956194673
 Light:
   m_ObjectHideFlags: 0
@@ -11619,6 +11635,7 @@ PrefabInstance:
     - {fileID: 2383241570526486330, guid: e7ce6bc29d1bd074b8bce8d731b577e6, type: 3}
     - {fileID: 3211268443653907907, guid: e7ce6bc29d1bd074b8bce8d731b577e6, type: 3}
     - {fileID: 2718083290867459891, guid: e7ce6bc29d1bd074b8bce8d731b577e6, type: 3}
+    - {fileID: 369398791784266569, guid: e7ce6bc29d1bd074b8bce8d731b577e6, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 1321415174655240995, guid: e7ce6bc29d1bd074b8bce8d731b577e6, type: 3}
       insertIndex: -1
