@@ -7,6 +7,7 @@ public class PlayerManager : MonoBehaviour
     [SerializeField] private Lantern lantern;
     [SerializeField] private GameManager gameManager;
     [SerializeField] private LightningManager lightningManager;
+    [SerializeField] private PlayerSafeZoneDetector safeZoneDetector;
 
     [Header("Anxiety")]
     [SerializeField] private float anxietyGainDarkness = 8f;
@@ -185,24 +186,34 @@ public class PlayerManager : MonoBehaviour
     // ------------------------
     private void UpdateAnxiety()
     {
+
         float gain = 0f;
 
-        if (lanternOff && lightsOff)
+        bool isInSafeZone = safeZoneDetector != null && safeZoneDetector.IsInSafeZone;
+
+        if (!isInSafeZone)
         {
-            darknessTimer += Time.deltaTime;
-            if (darknessTimer >= darknessGraceTime)
-                gain += anxietyGainDarkness;
+            if (lanternOff && lightsOff)
+            {
+                darknessTimer += Time.deltaTime;
+                if (darknessTimer >= darknessGraceTime)
+                    gain += anxietyGainDarkness;
+            }
+            else
+            {
+                darknessTimer = 0f;
+            }
+
+            if (inEncounter)
+                gain += anxietyGainEncounter;
+
+            if (seesMonster)
+                gain += anxietyGainSeeingMonster;
         }
         else
         {
             darknessTimer = 0f;
         }
-
-        if (inEncounter)
-            gain += anxietyGainEncounter;
-
-        if (seesMonster)
-            gain += anxietyGainSeeingMonster;
 
         if (gain > 0f)
         {
@@ -214,6 +225,7 @@ public class PlayerManager : MonoBehaviour
             currentAnxiety -= anxietyDecay * Time.deltaTime;
             currentAnxiety = Mathf.Clamp(currentAnxiety, 0f, 100f);
         }
+    
     }
 
     public void AddAnxiety(float amount)
