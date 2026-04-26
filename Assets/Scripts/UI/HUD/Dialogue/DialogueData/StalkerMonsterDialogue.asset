@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StalkerMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I'd better not lose sight of my fears, but get far away from them...
+  - text: Voices... I shouldn't lose sight of my fears... but get far away from them...
     voiceover: {fileID: 0}
     displayDuration: 2
     typewriterSpeed: 0.03

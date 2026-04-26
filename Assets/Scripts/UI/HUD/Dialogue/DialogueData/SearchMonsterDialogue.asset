@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SearchMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: Screams... hide and let it pass, it's just an illusion...
+  - text: Screams... it's just an illusion, hide in a closet and it will pass...
     voiceover: {fileID: 0}
     displayDuration: 4
     typewriterSpeed: 0.03

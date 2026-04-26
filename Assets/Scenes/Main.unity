@@ -5801,7 +5801,7 @@ PrefabInstance:
       objectReference: {fileID: 8300000, guid: 136743fcb42c3ac498959bedf7252f5e, type: 3}
     - target: {fileID: 7911191633344704542, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.284
+      value: -0.25
       objectReference: {fileID: 0}
     - target: {fileID: 7911191633344704542, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
       propertyPath: m_LocalPosition.y
@@ -5809,7 +5809,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7911191633344704542, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.01
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7911191633344704542, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
       propertyPath: m_LocalRotation.w
@@ -6637,13 +6637,14 @@ MonoBehaviour:
   - {fileID: 1993281552}
   - {fileID: 999204891}
   - {fileID: 964049175}
-  monsterSpawnChance: 0.2
+  monsterSpawnChance: 0.35
   navMeshSampleRadius: 10
-  stalkerMaxSpawnDistance: 4
+  stalkerMaxSpawnDistance: 2
   blockedAreas:
   - {fileID: 528503480}
   maxSpawnVerticalDifference: 1.2
   sameLevelAttempts: 12
+  delayAfterMonsterGone: 4
   fakeNoiseDialogueChance: 0.5
 --- !u!1 &927403864
 GameObject:
@@ -10538,7 +10539,6 @@ MonoBehaviour:
   canvasGroup: {fileID: 1683482169}
   fadeInDuration: 0.4
   fadeOutDuration: 0.6
-  isPlaying: 0
 --- !u!225 &1683482169
 CanvasGroup:
   m_ObjectHideFlags: 0

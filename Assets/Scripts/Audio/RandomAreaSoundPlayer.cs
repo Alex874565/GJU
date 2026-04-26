@@ -46,6 +46,12 @@ public class RandomAreaSoundPlayer : MonoBehaviour
     [SerializeField] private float maxSpawnVerticalDifference = 1.2f;
     [SerializeField] private int sameLevelAttempts = 12;
 
+    [Header("Spawn Cooldown")]
+    [SerializeField] private float delayAfterMonsterGone = 5f;
+
+    private float nextAllowedSpawnTime = 0f;
+    private bool hadActiveMonsterLastFrame;
+    
     private Vector3 lastSoundPosition;
     private bool waitingForTurnReaction;
     private float reactionTimer;
@@ -68,6 +74,17 @@ public class RandomAreaSoundPlayer : MonoBehaviour
 
     private void Update()
     {
+        bool hasMonster = MonsterSpawnManager.Instance != null &&
+                          MonsterSpawnManager.Instance.HasActiveMonster();
+
+        if (hadActiveMonsterLastFrame && !hasMonster)
+        {
+            // 🔥 monster JUST disappeared → start cooldown
+            nextAllowedSpawnTime = Time.time + Random.Range(delayAfterMonsterGone * 0.8f, delayAfterMonsterGone * 1.2f);
+        }
+
+        hadActiveMonsterLastFrame = hasMonster;
+        
         UpdateTurnReaction();
     }
     
@@ -212,7 +229,10 @@ public class RandomAreaSoundPlayer : MonoBehaviour
 
     private bool TrySpawnMonsterNearSound()
     {
-            if (MonsterSpawnManager.Instance != null &&
+        if (Time.time < nextAllowedSpawnTime)
+            return false;
+        
+        if (MonsterSpawnManager.Instance != null &&
                 MonsterSpawnManager.Instance.HasActiveMonster())
                 return false;
         
@@ -278,8 +298,7 @@ public class RandomAreaSoundPlayer : MonoBehaviour
                 MonsterSpawnManager.Instance.IsFirstSeenThisRun(identity.Type))
             {
                 if (dialogueManager != null &&
-                    identity.FirstSeenThisRunDialogue != null &&
-                    !dialogueManager.isPlaying)
+                    identity.FirstSeenThisRunDialogue != null)
                 {
                     dialogueManager.PlayMonsterDialoguePersistent(identity.FirstSeenThisRunDialogue);
                 }

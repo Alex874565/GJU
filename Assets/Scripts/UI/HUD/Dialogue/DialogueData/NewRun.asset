@@ -13,13 +13,11 @@ MonoBehaviour:
   m_Name: NewRun
   m_EditorClassIdentifier: 
   lines:
-  - text: Uhh.. back again?
+  - text: This doesn't feel right...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03
-  - text: 'This is weird...
-
-'
+  - text: I'm scared...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03
