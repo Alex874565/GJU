@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LightMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: Whispers... I should turn off my lantern and embrace the darkness...
+  - text: Whispers... I should turn off my flashlight and embrace the darkness...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03

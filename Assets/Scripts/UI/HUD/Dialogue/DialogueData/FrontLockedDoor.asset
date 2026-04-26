@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: FrontLockedDoor
   m_EditorClassIdentifier: 
   lines:
-  - text: I don't want to go out at night.
+  - text: I don't want to go out at night...
     voiceover: {fileID: 0}
     displayDuration: 1
     typewriterSpeed: 0.03
