@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class CreditsManager : MonoBehaviour
@@ -20,17 +21,42 @@ public class CreditsManager : MonoBehaviour
 
     private bool showWarning;
 
+    private Coroutine routine;
+    private bool skipped;
+    
     void Start()
     {
         showWarning = showWarningNext;
         showWarningNext = true;
-
-        if (showWarning)
-            StartCoroutine(PlaySequence());
-        else
-            StartCoroutine(PlayCreditsOnly());
+        
+        routine = StartCoroutine(PlayCreditsOnly());
     }
 
+    private void Update()
+    {
+        if (skipped) return;
+
+        bool clicked = Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
+        bool enter = Keyboard.current != null && Keyboard.current.enterKey.wasPressedThisFrame;
+        bool space = Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame;
+
+        if (clicked || enter || space)
+            SkipToMainMenu();
+    }
+
+    private void SkipToMainMenu()
+    {
+        skipped = true;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        MainMenuInit.skipIntroOnce = true;
+        MainMenuInit.ignoreInputUntil = Time.realtimeSinceStartup + 0.35f;
+
+        SceneManager.LoadScene("Main Menu");
+    }
+    
     IEnumerator PlaySequence()
     {
         warningCanvasGroup.alpha = 0f;
@@ -76,6 +102,8 @@ public class CreditsManager : MonoBehaviour
             yield return null;
         }
 
+        MainMenuInit.skipIntroOnce = true;
+        MainMenuInit.ignoreInputUntil = Time.realtimeSinceStartup + 0.35f;
         SceneManager.LoadScene("Main Menu");
     }
 

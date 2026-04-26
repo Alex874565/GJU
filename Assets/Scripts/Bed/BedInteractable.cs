@@ -29,7 +29,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     {
         isHighlighted = highlighted;
 
-        if (used || playerManager == null || playerManager.AreLightsOff)
+        if (used || playerManager == null || !playerManager.AreLightsOff)
         {
             InteractPrompt.Instance?.Hide();
             return;
@@ -44,7 +44,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     public void Interact(PlayerInteract player)
     {
         if (used) return;
-        if (playerManager != null && playerManager.AreLightsOff) return;
+        if (playerManager != null && !playerManager.AreLightsOff) return;
 
         used = true;
         InteractPrompt.Instance?.Hide();

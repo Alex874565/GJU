@@ -106,6 +106,8 @@ public class PauseMenu : MonoBehaviour
 
         AudioManager.Instance.ResumeAudioForMainMenu();
 
+        MainMenuInit.skipIntroOnce = true;
+        MainMenuInit.ignoreInputUntil = Time.realtimeSinceStartup + 0.35f;
         SceneManager.LoadScene("Main Menu", LoadSceneMode.Single);
     }
 
