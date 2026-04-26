@@ -1339,7 +1339,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 484500864}
   isBack: 0
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
@@ -1791,6 +1790,10 @@ MonoBehaviour:
   neonColor: {r: 0.78, g: 0.65, b: 0.42, a: 1}
   minTimeBetweenFlickers: 3
   maxTimeBetweenFlickers: 7
+  crackleClips: []
+  crackleVolume: 0.4
+  cracklePitch: {x: 0.8, y: 1.1}
+  crackleChance: 0.8
 --- !u!1 &679949983
 GameObject:
   m_ObjectHideFlags: 0
@@ -1854,7 +1857,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 140294922}
   buttonFlicker: {fileID: 679949987}
   isBack: 0
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.69182384, g: 0.5989611, b: 0.43293375, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
@@ -2100,14 +2102,13 @@ MonoBehaviour:
   settingsPanel: {fileID: 0}
   buttonFlicker: {fileID: 706325953}
   isBack: 0
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
   hoverDuration: 0.3
   letterSpacingNormal: 28
   letterSpacingHover: 38
-  sceneToLoad: Main
+  sceneToLoad: Credits
   isQuit: 0
   showBorderBottom: 0
 --- !u!114 &706325953
@@ -4423,6 +4424,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1511628880}
   m_CullTransparentMesh: 1
+--- !u!1 &1541032205
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1541032207}
+  - component: {fileID: 1541032206}
+  m_Layer: 0
+  m_Name: MainMenuInit
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1541032206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541032205}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 797ad1c275750bc468d46cb8dea98de7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1541032207
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1541032205}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 903.71893, y: 543.0658, z: 2.231629}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1598569322
 GameObject:
   m_ObjectHideFlags: 0
@@ -4562,7 +4607,6 @@ MonoBehaviour:
   settingsPanel: {fileID: 140294922}
   buttonFlicker: {fileID: 1617764034}
   isBack: 1
-  audioSource: {fileID: 0}
   buttonPressClip: {fileID: 8300000, guid: 73f52d1ea3148314789154e15fc16b0a, type: 3}
   normalColor: {r: 0.6901961, g: 0.6, b: 0.43137255, a: 0.55}
   hoverColor: {r: 0.9, g: 0.78, b: 0.55, a: 1}
@@ -4877,6 +4921,10 @@ MonoBehaviour:
   neonColor: {r: 0.78, g: 0.65, b: 0.42, a: 1}
   minTimeBetweenFlickers: 4
   maxTimeBetweenFlickers: 7
+  crackleClips: []
+  crackleVolume: 0.4
+  cracklePitch: {x: 0.8, y: 1.1}
+  crackleChance: 0.8
 --- !u!114 &1861272776
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6003,3 +6051,4 @@ SceneRoots:
   - {fileID: 800873702}
   - {fileID: 449272408}
   - {fileID: 890587886}
+  - {fileID: 1541032207}

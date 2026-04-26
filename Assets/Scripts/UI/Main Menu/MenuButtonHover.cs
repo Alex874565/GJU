@@ -117,6 +117,9 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         if (sceneToLoad == "Credits")
             CreditsManager.showWarningNext = true;
 
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
     }
 
