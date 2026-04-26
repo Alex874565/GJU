@@ -10,12 +10,17 @@ public class ScanlineEffect : MonoBehaviour
 
     private float canvasHeight;
 
-    public void Start()
+    private void OnEnable()
     {
         canvasHeight = GetComponentInParent<Canvas>().GetComponent<RectTransform>().rect.height;
 
         if (scanline1 != null) StartCoroutine(RunScanline(scanline1, 0.9f, 0f, 0.55f));
         if (scanline2 != null) StartCoroutine(RunScanline(scanline2, 0.8f, 3.5f, 0.25f));
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
     }
 
     IEnumerator RunScanline(RectTransform rt, float speed, float initialDelay, float maxAlpha)

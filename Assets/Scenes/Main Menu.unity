@@ -3024,7 +3024,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: a1bbadc6f1e7ea547a342c0dc9c59adc, type: 3}
+  m_Sprite: {fileID: 21300000, guid: d8b465e3f30af684e98b64304ccb42f3, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -4582,10 +4582,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 1068336872}
-  fadeInTime: 1
-  waitTime: 10
+  fadeInTime: 5
+  waitTime: 5
   fadeOutTime: 1
+  skipFadeTime: 0.35
   objectToDisable: {fileID: 193731692}
+  enableAfterIntro: []
 --- !u!4 &1541032207
 Transform:
   m_ObjectHideFlags: 0

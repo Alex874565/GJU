@@ -13,6 +13,9 @@ public class MainMenuInit : MonoBehaviour
 
     [Header("Disable After")]
     [SerializeField] private GameObject objectToDisable;
+    
+    [Header("Enable After Intro")]
+    [SerializeField] private GameObject[] enableAfterIntro;
 
     private Coroutine routine;
     private bool skipping;
@@ -23,6 +26,9 @@ public class MainMenuInit : MonoBehaviour
 
     private void Start()
     {
+        foreach (GameObject obj in enableAfterIntro)
+            if (obj != null) obj.SetActive(false);
+        
         if (skipIntroOnce)
         {
             skipIntroOnce = false;
@@ -124,6 +130,11 @@ public class MainMenuInit : MonoBehaviour
 
     private void Finish()
     {
+        MainMenuInit.ignoreInputUntil = Time.realtimeSinceStartup + 0.35f;
+        
+        foreach (GameObject obj in enableAfterIntro)
+            if (obj != null) obj.SetActive(true);
+        
         finished = true;
 
         if (canvasGroup != null)

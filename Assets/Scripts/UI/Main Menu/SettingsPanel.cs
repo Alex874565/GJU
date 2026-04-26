@@ -18,7 +18,7 @@ public class SettingsPanel : MonoBehaviour
     private CanvasGroup canvasGroup;
     private bool isOpen = false;
 
-    void Start()
+    void OnEnable()
     {
         canvasGroup = settingsPanel.GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -28,6 +28,11 @@ public class SettingsPanel : MonoBehaviour
         canvasGroup.interactable = false;
         canvasGroup.blocksRaycasts = false;
         settingsPanel.SetActive(false);
+    }
+
+    void OnDisable()
+    {
+        StopAllCoroutines();
     }
 
     public void OpenSettings()
@@ -78,16 +83,17 @@ public class SettingsPanel : MonoBehaviour
 
             if (!open)
             {
-                NeonFlicker[] flickers = mainMenuContent.GetComponentsInChildren<NeonFlicker>(true);
-                foreach (NeonFlicker f in flickers) { f.StopAllCoroutines(); f.RestartFlickerLoop(); }
-
                 ScanlineEffect[] scanlines = mainMenuContent.GetComponentsInChildren<ScanlineEffect>(true);
-                foreach (ScanlineEffect s in scanlines) { s.StopAllCoroutines(); s.Start(); }
+                foreach (ScanlineEffect s in scanlines)
+                {
+                    s.gameObject.SetActive(false);
+                    s.gameObject.SetActive(true);
+                }
 
                 if (monster != null)
                 {
-                    BackgroundMonsterFlicker bmf = monster.GetComponent<BackgroundMonsterFlicker>();
-                    if (bmf != null) { bmf.StopAllCoroutines(); bmf.Start(); }
+                    monster.SetActive(false);
+                    monster.SetActive(true);
                 }
             }
         }
