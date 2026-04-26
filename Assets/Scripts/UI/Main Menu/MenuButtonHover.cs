@@ -72,6 +72,9 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        if (Time.realtimeSinceStartup < MainMenuInit.ignoreInputUntil)
+            return;
+        
         if (isResume && pauseMenu != null)
         {
             StartCoroutine(FlickerThenAction(() => pauseMenu.ResumeGame()));
@@ -120,7 +123,7 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
+        LoadingSceneManager.LoadScene(sceneToLoad);
     }
 
     IEnumerator FlickerThenAction(System.Action action)
@@ -189,7 +192,7 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
     {
         float clipLength = buttonPressClip != null ? buttonPressClip.length : 0.2f;
         yield return new WaitForSecondsRealtime(clipLength);
-        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
+        LoadingSceneManager.LoadScene(sceneToLoad);
     }
 
     private void Quit()

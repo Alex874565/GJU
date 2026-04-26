@@ -49,7 +49,7 @@ public class BackgroundMonsterFlicker : MonoBehaviour
     private Vector2 twitchOffset;
     private float anchoredX;
 
-    public void Start()
+    private void OnEnable()
     {
         img = GetComponent<Image>();
         rt = GetComponent<RectTransform>();
@@ -58,6 +58,13 @@ public class BackgroundMonsterFlicker : MonoBehaviour
         creepyPhase = Random.Range(0f, Mathf.PI * 2f);
         SetAlpha(0f);
         StartCoroutine(FlickerLoop());
+    }
+
+    private void OnDisable()
+    {
+        StopAllCoroutines();
+        isVisible = false;
+        SetAlpha(0f);
     }
 
     void Update()
