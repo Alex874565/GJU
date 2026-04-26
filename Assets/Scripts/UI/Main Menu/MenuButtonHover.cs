@@ -108,11 +108,14 @@ public class MenuButtonHover : MonoBehaviour, IPointerEnterHandler, IPointerExit
                 StartCoroutine(StartGameRoutine())));
         }
     }
-    
+
     private IEnumerator StartGameRoutine()
     {
         if (AudioManager.Instance != null)
             yield return StartCoroutine(AudioManager.Instance.FadeMenuMusic(false));
+
+        if (sceneToLoad == "Credits")
+            CreditsManager.showWarningNext = true;
 
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneToLoad);
     }
