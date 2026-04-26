@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: GeneratorDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: Thank god...
+  - text: Thank God...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03

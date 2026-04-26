@@ -60,6 +60,13 @@ public class GameManager : MonoBehaviour
     private GameObject previousEnvironment;
     private bool layoutChanged;
     
+    [SerializeField] private UnityEngine.UI.Image leftClickHighlight;
+    [SerializeField] private float highlightPulseSpeed = 2f;
+    [SerializeField] private Color highlightColor = new Color(0.74f, 0.43f, 0.40f, 1f);
+    [SerializeField] private Color highlightDimColor = new Color(0.74f, 0.43f, 0.40f, 0.15f);
+
+    private Coroutine highlightCoroutine;
+
     private Coroutine resetRoutine;
     private bool isResetting;
     
@@ -80,6 +87,9 @@ public class GameManager : MonoBehaviour
 
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
+
+        if (leftClickHighlight != null)
+            leftClickHighlight.color = highlightDimColor;
 
         // 🔥 STORE INITIAL WORLD TRANSFORM
         initialPlayerPosition = playerTransform.position;
@@ -315,23 +325,50 @@ public class GameManager : MonoBehaviour
                 resettables[i].ResetState();
         }
     }
-    
+
     IEnumerator WaitForFlashlightClick()
     {
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(true);
 
+        if (leftClickHighlight != null)
+            highlightCoroutine = StartCoroutine(PulseHighlight());
+
         if (clickPromptText != null)
-            yield return StartCoroutine(TypewriterPrompt("click to turn on flashlight"));
-        
+            yield return StartCoroutine(TypewriterPrompt("Click to turn flashlight ON/OFF"));
+
         lantern.InputLocked = false;
-        
+
         yield return new WaitUntil(() =>
             Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame);
 
+        if (highlightCoroutine != null)
+            StopCoroutine(highlightCoroutine);
+
+        if (leftClickHighlight != null)
+            leftClickHighlight.color = highlightDimColor;
+
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
+    }
+
+    IEnumerator PulseHighlight()
+    {
+        while (true)
+        {
+            float elapsed = 0f;
+            float duration = 1f / highlightPulseSpeed;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.PingPong(elapsed * highlightPulseSpeed, 1f);
+                if (leftClickHighlight != null)
+                    leftClickHighlight.color = Color.Lerp(highlightDimColor, highlightColor, t);
+                yield return null;
+            }
+        }
     }
 
     public void OnMouseClick(InputAction.CallbackContext ctx)

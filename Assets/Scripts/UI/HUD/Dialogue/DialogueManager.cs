@@ -168,8 +168,19 @@ public class DialogueManager : MonoBehaviour
 
         yield return StartCoroutine(ShowLine(line));
 
+        float timeout = 30f;
+        float elapsed = 0f;
+
         while (monsterDialogueActive)
+        {
+            elapsed += Time.deltaTime;
+            if (elapsed >= timeout)
+            {
+                monsterDialogueActive = false;
+                break;
+            }
             yield return null;
+        }
 
         yield return StartCoroutine(FadeOutAndClear());
     }

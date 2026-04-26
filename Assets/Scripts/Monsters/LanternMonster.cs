@@ -445,15 +445,15 @@ public class LanternMonster : MonoBehaviour, IResettable
 
     private void DeactivateMonster()
     {
+        DialogueManager.Instance?.StopMonsterDialogue();
+
         StopAllCoroutines();
 
         monsterVisibility?.ClearVisibility();
 
         if (monsterVisual != null)
             monsterVisual.SetActive(false);
-        
-        DialogueManager.Instance?.StopMonsterDialogue();
-        
+
         MonsterSpawnManager.Instance?.UnregisterSpawn();
 
         gameObject.SetActive(false);
