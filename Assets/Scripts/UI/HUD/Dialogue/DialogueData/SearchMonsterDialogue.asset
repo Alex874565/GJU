@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SearchMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I have hide and let it pass.
+  - text: Hide and let it pass, it's just an illusion...
     voiceover: {fileID: 0}
-    displayDuration: 3
-    typewriterSpeed: 0.04
+    displayDuration: 2
+    typewriterSpeed: 0.03

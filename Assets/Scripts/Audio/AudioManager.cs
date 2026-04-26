@@ -94,6 +94,50 @@ public class AudioManager : MonoBehaviour
         return sfxPool[0];
     }
     
+    public static IEnumerator PlayClipPartial(
+        AudioClip clip,
+        Vector3 position,
+        float volumeMultiplier,
+        float minDuration,
+        float maxDuration
+    )
+    {
+        if (Instance == null || clip == null) yield break;
+        if (Instance.isPausedAudio) yield break;
+
+        AudioSource source = Instance.GetFreeSFXSource();
+
+        source.Stop();
+        source.transform.position = position;
+        source.spatialBlend = 1f;
+        source.clip = clip;
+        source.time = 0f;
+        source.pitch = Random.Range(
+            Instance.randomPitchRange.x,
+            Instance.randomPitchRange.y
+        );
+        source.volume = SettingsController.GetSFXVolume() * volumeMultiplier;
+
+        float duration = Random.Range(minDuration, maxDuration);
+        duration = Mathf.Min(duration, clip.length);
+
+        source.Play();
+
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            if (Instance.isPausedAudio)
+                yield break;
+
+            timer += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        source.Stop();
+        source.clip = null;
+    }
+    
     public static void PlayUISFX(AudioClip clip, float volumeMultiplier, float pitch)
     {
         if (Instance == null || clip == null) return;

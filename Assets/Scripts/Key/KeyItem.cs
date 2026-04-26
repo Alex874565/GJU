@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class KeyItem : MonoBehaviour, IInteractable
+public class KeyItem : MonoBehaviour, IInteractable, IResettable
 {
     [Header("References")]
     [SerializeField] private Transform visual;
@@ -93,5 +93,19 @@ public class KeyItem : MonoBehaviour, IInteractable
         PlayerInventory.Instance?.PickUpKey();
 
         gameObject.SetActive(false);
+    }
+    
+    public void ResetState()
+    {
+        pickedUp = false;
+        isHighlighted = false;
+
+        if (visual != null)
+        {
+            visual.localPosition = visualBaseLocalPos;
+            visual.localRotation = Quaternion.identity;
+        }
+
+        gameObject.SetActive(true);
     }
 }

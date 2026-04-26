@@ -1,33 +1,35 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
-using System.Collections;
+using Random = UnityEngine.Random;
 
 public class LanternMonster : MonoBehaviour, IResettable
 {
     [Header("References")]
-    [SerializeField] private PlayerManager playerManager;
-    [SerializeField] private Camera playerCamera;
-    [SerializeField] private GameObject monsterVisual;
-    [SerializeField] private AudioSource audioSource;
-    [SerializeField] private AudioClip jumpSound;
+    private PlayerManager playerManager;
+    private Camera playerCamera;
 
-    [Header("Spawn")]
-    [SerializeField] private float minAppearDelay = 3f;
-    [SerializeField] private float maxAppearDelay = 8f;
+    [SerializeField] private GameObject monsterVisual;
+    [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private MonsterVisibility monsterVisibility;
+
+    [Header("Spawn / Camera Edge Warp")]
     [SerializeField] private float minSpawnDistance = 2f;
     [SerializeField] private float maxSpawnDistance = 6f;
     [SerializeField] private float navMeshSampleRadius = 2f;
     [SerializeField] private int spawnAttempts = 100;
 
+    [Header("Lantern Timers")]
+    [SerializeField] private float lanternOnTimeToAttack = 2f;
+    [SerializeField] private float lanternOffTimeToDespawn = 4f;
+
     [Header("Attack")]
-    [SerializeField] private float waitBeforeAttack = 2f;
     [SerializeField] private float invisibleTimeBeforeAttack = 0.35f;
-    [SerializeField] private float deactivateAfterAttack = 0.1f;
     [SerializeField] private float monsterCenterHeight = 1.6f;
     [SerializeField] private float overshootMultiplier = 1.15f;
     [SerializeField] private float clipThroughTime = 0.05f;
-    
-    [Header("Flicker")]
+
+    [Header("Flicker Before Attack")]
     [SerializeField] private float flickerDuration = 2f;
     [SerializeField] private float startHiddenTime = 0.45f;
     [SerializeField] private float endHiddenTime = 0.03f;
@@ -40,71 +42,180 @@ public class LanternMonster : MonoBehaviour, IResettable
     [SerializeField] private float lungeDuration = 0.25f;
     [SerializeField] private float stopDistanceFromCamera = 0.8f;
 
-    private bool appeared;
-    private bool attacked;
+    [Header("Despawn")]
+    [SerializeField] private AudioClip[] despawnSounds;
+    [SerializeField] private float despawnVolume = 1f;
+    [SerializeField] private float maxDespawnWait = 2f;
+    
+    [SerializeField] private Lantern lantern;
+
+    [SerializeField] private float frontSpawnDistance = 3f;
+    [SerializeField] private float frontSpawnSideRandomness = 0.8f;
+    [SerializeField] private float frontSpawnVerticalOffset = 0f;
+
     private bool attacking;
+    private bool attacked;
+    private bool isDespawning;
     private bool wasLanternOn;
 
-    private float appearDelay;
-    private float appearTimer;
-    private float attackTimer;
+    private float lanternOnTimer;
+    private float lanternOffTimer;
 
-    private void Start()
+    private void Awake()
     {
-        appearDelay = Random.Range(minAppearDelay, maxAppearDelay);
+        if (monsterVisibility == null)
+            monsterVisibility = GetComponent<MonsterVisibility>();
+
+        playerManager = FindObjectOfType<PlayerManager>();
+
+        if (playerManager != null)
+            playerCamera = playerManager.GetComponentInChildren<Camera>();
+    }
+
+    private void OnEnable()
+    {
+        if (lantern == null)
+            lantern = FindObjectOfType<Lantern>();
+
+        if (lantern != null)
+        {
+            lantern.OnLanternTurnedOn -= HandleLanternTurnedOn;
+            lantern.OnLanternTurnedOn += HandleLanternTurnedOn;
+        }
+        
+        if (playerManager == null)
+            playerManager = FindObjectOfType<PlayerManager>();
+
+        if (playerCamera == null && playerManager != null)
+            playerCamera = playerManager.GetComponentInChildren<Camera>();
+
+        if (monsterVisibility == null)
+            monsterVisibility = GetComponent<MonsterVisibility>();
+
+        attacking = false;
+        attacked = false;
+        isDespawning = false;
+
+        lanternOnTimer = 0f;
+        lanternOffTimer = 0f;
 
         bool lanternOn = playerManager != null && !playerManager.IsLanternOff;
         bool lightsOff = playerManager != null && playerManager.AreLightsOff;
 
         wasLanternOn = lanternOn;
 
-        appeared = lanternOn && lightsOff;
+        monsterVisual?.SetActive(lanternOn && lightsOff);
+    }
+    
+    private void OnDisable()
+    {
+        if (lantern != null)
+            lantern.OnLanternTurnedOn -= HandleLanternTurnedOn;
+    }
+    
+    private void HandleLanternTurnedOn()
+    {
+        if (!isActiveAndEnabled) return;
+        if (attacking || attacked || isDespawning) return;
+        if (playerCamera == null) return;
 
-        if (monsterVisual != null)
-            monsterVisual.SetActive(appeared);
+        bool warped = TrySpawnAtCameraCorner();
+
+        if (!warped)
+            WarpInFrontOfPlayer();
+
+        lanternOnTimer = 0f;
+        lanternOffTimer = 0f;
+
+        monsterVisual?.SetActive(true);
+    }
+    
+    private void WarpInFrontOfPlayer()
+    {
+        Vector3 forward = playerCamera.transform.forward;
+        forward.y = 0f;
+        forward.Normalize();
+
+        Vector3 right = playerCamera.transform.right;
+        right.y = 0f;
+        right.Normalize();
+
+        Vector3 target =
+            playerCamera.transform.position +
+            forward * frontSpawnDistance +
+            right * Random.Range(-frontSpawnSideRandomness, frontSpawnSideRandomness);
+
+        target.y += frontSpawnVerticalOffset;
+
+        if (NavMesh.SamplePosition(target, out NavMeshHit hit, navMeshSampleRadius, NavMesh.AllAreas))
+            transform.position = hit.position;
+        else
+            transform.position = target;
     }
 
     private void Update()
     {
-        if (attacked || playerManager == null) return;
+        if (playerManager == null || attacking || attacked || isDespawning)
+            return;
 
         bool lanternOn = !playerManager.IsLanternOff;
         bool lightsOff = playerManager.AreLightsOff;
-        bool condition = lanternOn && lightsOff;
 
-        bool lanternJustTurnedOn = lanternOn && !wasLanternOn;
-        wasLanternOn = lanternOn;
+// 👉 VISUAL ONLY
+        if (monsterVisual != null)
+            monsterVisual.SetActive(lanternOn && lightsOff);
 
-        if (lanternJustTurnedOn && condition && appeared && !attacking)
+// 👉 TIMERS (AGGREGATE)
+        if (lanternOn && lightsOff)
         {
-            TrySpawnAtCameraCorner(false);
-        }
+            lanternOnTimer += Time.deltaTime;
 
-        if (!appeared)
+            if (!attacking && !isDespawning && lanternOnTimer >= lanternOnTimeToAttack)
+                StartCoroutine(FlickerThenAttackRoutine());
+        }
+        else
         {
-            if (!lanternOn) return;
+            lanternOffTimer += Time.deltaTime;
 
-            appearTimer += Time.deltaTime;
-
-            if (appearTimer >= appearDelay)
-                TrySpawnAtCameraCorner(true);
-
-            return;
+            if (!attacking && !isDespawning && lanternOffTimer >= lanternOffTimeToDespawn)
+                StartCoroutine(DespawnRoutine());
         }
-
-        if (!attacking && monsterVisual != null)
-            monsterVisual.SetActive(condition);
-
-        if (!condition) return;
-
-        attackTimer += Time.deltaTime;
-
-        if (attackTimer >= waitBeforeAttack)
-            StartCoroutine(FlickerThenAttackRoutine());
     }
 
-    private void TrySpawnAtCameraCorner(bool resetAttackTimer)
+    private IEnumerator DespawnRoutine()
     {
+        if (isDespawning || attacking || attacked)
+            yield break;
+
+        isDespawning = true;
+        monsterVisibility?.ClearVisibility();
+
+        if (monsterVisual != null)
+            monsterVisual.SetActive(false);
+
+        float delay = Mathf.Clamp(PlayDespawnSound(), 0.05f, maxDespawnWait);
+
+        yield return new WaitForSeconds(delay);
+
+        DeactivateMonster();
+    }
+
+    private float PlayDespawnSound()
+    {
+        if (despawnSounds == null || despawnSounds.Length == 0)
+            return 0f;
+
+        AudioClip clip = despawnSounds[Random.Range(0, despawnSounds.Length)];
+        AudioManager.PlaySFX(clip, transform.position, despawnVolume);
+
+        return clip.length;
+    }
+
+    private bool TrySpawnAtCameraCorner()
+    {
+        if (playerCamera == null)
+            return false;
+
         for (int i = 0; i < spawnAttempts; i++)
         {
             Vector3 viewportPoint = GetRandomCornerViewportPoint();
@@ -132,23 +243,10 @@ public class LanternMonster : MonoBehaviour, IResettable
                 continue;
 
             transform.position = spawnPos;
-
-            Vector3 lookDir = playerCamera.transform.position - transform.position;
-            lookDir.y = 0f;
-
-            if (lookDir != Vector3.zero)
-                transform.rotation = Quaternion.LookRotation(lookDir);
-
-            appeared = true;
-
-            if (resetAttackTimer)
-                attackTimer = 0f;
-
-            monsterVisual?.SetActive(true);
-            return;
+            return true;
         }
 
-        Debug.LogWarning("LanternMonster failed to find corner spawn.");
+        return false;
     }
 
     private Vector3 GetRandomCornerViewportPoint()
@@ -166,13 +264,15 @@ public class LanternMonster : MonoBehaviour, IResettable
 
     private IEnumerator FlickerThenAttackRoutine()
     {
-        if (attacking) yield break;
+        if (attacking || attacked || isDespawning)
+            yield break;
+
         attacking = true;
 
         Vector3 originalPos = transform.position;
         float timer = 0f;
 
-        monsterVisual.SetActive(false);
+        monsterVisual?.SetActive(false);
 
         while (timer < flickerDuration)
         {
@@ -196,7 +296,7 @@ public class LanternMonster : MonoBehaviour, IResettable
         }
 
         transform.position = originalPos;
-        monsterVisual.SetActive(false);
+        monsterVisual?.SetActive(false);
 
         yield return new WaitForSeconds(invisibleTimeBeforeAttack);
 
@@ -205,6 +305,9 @@ public class LanternMonster : MonoBehaviour, IResettable
 
     private IEnumerator FlashOnce(Vector3 originalPos, float intensity)
     {
+        if (isDespawning)
+            yield break;
+
         Vector3 jitter = new Vector3(
             Random.Range(-jitterAmount, jitterAmount) * intensity,
             Random.Range(-jitterAmount * 0.4f, jitterAmount * 0.4f) * intensity,
@@ -212,31 +315,31 @@ public class LanternMonster : MonoBehaviour, IResettable
         );
 
         transform.position = originalPos + jitter;
-        monsterVisual.SetActive(true);
+        monsterVisual?.SetActive(true);
 
         yield return new WaitForSeconds(Random.Range(flashTimeRange.x, flashTimeRange.y));
 
-        monsterVisual.SetActive(false);
+        monsterVisual?.SetActive(false);
         transform.position = originalPos;
     }
 
     private IEnumerator AttackRoutine()
     {
+        if (isDespawning)
+            yield break;
+
         attacked = true;
 
         monsterVisual?.SetActive(true);
 
-        if (audioSource != null && jumpSound != null)
-            audioSource.PlayOneShot(jumpSound);
+        if (jumpSound != null)
+            AudioManager.PlaySFX(jumpSound, transform.position);
 
         playerManager?.AddAnxiety(120f);
 
         Vector3 startPos = transform.position;
-        
-// monster center at start
         Vector3 startCenter = startPos + Vector3.up * monsterCenterHeight;
 
-// target center is in front of camera, but locked to start center height
         Vector3 forward = playerCamera.transform.forward;
         forward.y = 0f;
         forward.Normalize();
@@ -256,7 +359,6 @@ public class LanternMonster : MonoBehaviour, IResettable
 
         float timer = 0f;
 
-        // === LUNGE ===
         while (timer < lungeDuration)
         {
             timer += Time.deltaTime;
@@ -264,16 +366,9 @@ public class LanternMonster : MonoBehaviour, IResettable
 
             transform.position = Vector3.Lerp(startPos, targetPos, t);
 
-            Vector3 lookDir = playerCamera.transform.position - transform.position;
-            lookDir.y = 0f;
-
-            if (lookDir.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.LookRotation(lookDir);
-
             yield return null;
         }
 
-        // === CLIP THROUGH CAMERA (very fast) ===
         float clipTimer = 0f;
 
         while (clipTimer < clipThroughTime)
@@ -282,29 +377,37 @@ public class LanternMonster : MonoBehaviour, IResettable
             float t = clipTimer / clipThroughTime;
 
             transform.position = Vector3.Lerp(targetPos, overshootPos, t);
-
             yield return null;
         }
 
-        // === OPTIONAL: 1 frame hold inside camera ===
         yield return null;
 
-        // === DISAPPEAR ===
-        monsterVisual?.SetActive(false);
+        DeactivateMonster();
+    }
+
+    private void DeactivateMonster()
+    {
+        StopAllCoroutines();
+
+        monsterVisibility?.ClearVisibility();
+
+        if (monsterVisual != null)
+            monsterVisual.SetActive(false);
+
+        MonsterSpawnManager.Instance?.UnregisterSpawn();
+
         gameObject.SetActive(false);
     }
-    
+
     public void ResetState()
     {
-        appeared = false;
-        attacked = false;
         attacking = false;
+        attacked = false;
+        isDespawning = false;
 
-        appearTimer = 0f;
-        attackTimer = 0f;
-        appearDelay = Random.Range(minAppearDelay, maxAppearDelay);
+        lanternOnTimer = 0f;
+        lanternOffTimer = 0f;
 
-        monsterVisual?.SetActive(false);
-        gameObject.SetActive(false);
+        DeactivateMonster();
     }
 }

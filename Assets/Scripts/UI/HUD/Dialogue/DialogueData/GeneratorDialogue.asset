@@ -14,11 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: I can do this...
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03
   - text: I just need to get to the garage...
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1.5
+    typewriterSpeed: 0.03
   - text: And turn the generator back on.
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1.5
+    typewriterSpeed: 0.03

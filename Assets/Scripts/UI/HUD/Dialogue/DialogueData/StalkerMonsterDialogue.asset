@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: StalkerMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I shouldn't turn my back on my fears.
+  - text: I'd better not lose sight of my fears.
     voiceover: {fileID: 0}
-    displayDuration: 2
-    typewriterSpeed: 0.04
-  - text: But I can stay far away from them.
+    displayDuration: 1.5
+    typewriterSpeed: 0.03
+  - text: But I should get far away from those illusions.
     voiceover: {fileID: 0}
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    displayDuration: 1.5
+    typewriterSpeed: 0.03

@@ -1,5 +1,6 @@
 ﻿public enum MonsterType
 {
     Search,
-    Stalker
+    Stalker,
+    Lantern
 }

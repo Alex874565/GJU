@@ -15,5 +15,5 @@ MonoBehaviour:
   lines:
   - text: I don't want to go out at night.
     voiceover: {fileID: 0}
-    displayDuration: 4
-    typewriterSpeed: 0.04
+    displayDuration: 1
+    typewriterSpeed: 0.03

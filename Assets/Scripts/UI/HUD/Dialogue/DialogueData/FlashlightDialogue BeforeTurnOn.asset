@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: I need my flashlight.
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03

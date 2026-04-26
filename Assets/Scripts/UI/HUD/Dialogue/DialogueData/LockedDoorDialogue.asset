@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: This door is locked. I must have put the key somewhere around here...
-    displayDuration: 4
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03
