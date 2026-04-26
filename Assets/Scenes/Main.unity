@@ -4222,10 +4222,10 @@ MonoBehaviour:
   - {fileID: 1993281552}
   - {fileID: 999204891}
   - {fileID: 964049175}
-  leftClickHighlight: {fileID: 15339696}
+  leftClickHighlight: {fileID: 0}
   highlightPulseSpeed: 2
-  highlightColor: {r: 0.654088, g: 0.19951732, b: 0.21610719, a: 1}
-  highlightDimColor: {r: 0.6289307, g: 0.33028746, b: 0.34058556, a: 1}
+  highlightColor: {r: 0.74, g: 0.43, b: 0.4, a: 1}
+  highlightDimColor: {r: 0.74, g: 0.43, b: 0.4, a: 0.15}
 --- !u!1 &654201925
 GameObject:
   m_ObjectHideFlags: 0
@@ -6730,15 +6730,17 @@ MonoBehaviour:
   dialogueManager: {fileID: 1683482168}
   turnAroundDialogue: {fileID: 11400000, guid: 8e65c231432524848810486103d98a9d, type: 2}
   monsterObjects:
+  - {fileID: 1993281552}
+  - {fileID: 999204891}
   - {fileID: 964049175}
   monsterSpawnChance: 1
-  navMeshSampleRadius: 10
+  navMeshSampleRadius: 5
   stalkerMaxSpawnDistance: 3
   stalkerNavSampleRadius: 3
   blockedAreas:
   - {fileID: 528503480}
   maxSpawnVerticalDifference: 1.2
-  sameLevelAttempts: 12
+  sameLevelAttempts: 8
   delayAfterMonsterGone: 4
   fakeNoiseDialogueChance: 0.5
 --- !u!1 &927403864

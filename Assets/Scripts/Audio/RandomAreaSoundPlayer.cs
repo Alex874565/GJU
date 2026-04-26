@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -353,16 +354,17 @@ public class RandomAreaSoundPlayer : MonoBehaviour
     
     private GameObject GetAvailableMonster()
     {
-        // shuffle for randomness
-        for (int i = 0; i < monsterObjects.Length; i++)
-        {
-            int index = Random.Range(0, monsterObjects.Length);
-            GameObject m = monsterObjects[index];
+        List<GameObject> available = new List<GameObject>();
 
+        foreach (var m in monsterObjects)
+        {
             if (m != null && !m.activeInHierarchy)
-                return m;
+                available.Add(m);
         }
 
-        return null;
+        if (available.Count == 0)
+            return null;
+
+        return available[Random.Range(0, available.Count)];
     }
 }
