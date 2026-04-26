@@ -15,6 +15,23 @@ public class MonsterLookAtPlayer : MonoBehaviour
             player = GameObject.FindGameObjectWithTag("Player")?.transform;
     }
     
+    public void ForceFacePlayer()
+    {
+        if (player == null)
+            player = GameObject.FindGameObjectWithTag("Player")?.transform;
+
+        if (player == null)
+            return;
+
+        Vector3 direction = player.position - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude < 0.001f)
+            return;
+
+        transform.rotation = Quaternion.LookRotation(direction);
+    }
+    
     private void Update()
     {
         if (player == null)

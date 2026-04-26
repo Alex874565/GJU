@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1fc6d3938dcc054480472448fd14f4c, type: 3}
-  m_Name: IntroDialogue
+  m_Name: Room Changed
   m_EditorClassIdentifier: 
   lines:
-  - text: "The power's out... I can\u2019t see anything..."
+  - text: The room...
     voiceover: {fileID: 0}
-    displayDuration: 1
+    displayDuration: 1.5
     typewriterSpeed: 0.03
-  - text: No... no, no, no...
+  - text: It's changing!
     voiceover: {fileID: 0}
-    displayDuration: 1
+    displayDuration: 1.5
     typewriterSpeed: 0.03

@@ -70,6 +70,9 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [SerializeField] private AudioClip[] despawnSounds;
     [SerializeField] private float despawnVolume = 1f;
     
+    [Header("Same Level")]
+    [SerializeField] private int sameLevelSampleAttempts = 12;
+    
     public bool IsDespawning => isDespawning;
 
     private float teleportTimer;
@@ -269,11 +272,7 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
                 rawTarget = transform.position + fallbackDir * step;
             }
             Debug.Log("Trying teleport target: " + rawTarget);
-            if (!NavMesh.SamplePosition(rawTarget, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
-                continue;
-
-// 🚫 Reject positions too high/low
-            if (Mathf.Abs(hit.position.y - player.position.y) > maxVerticalDifference)
+            if (!TrySampleSameLevelNavMesh(rawTarget, out NavMeshHit hit))
                 continue;
 
             float distToPlayer = Vector3.Distance(hit.position, player.position);
@@ -287,6 +286,31 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
             TeleportTo(hit.position);
             return;
         }
+    }
+    
+    private bool TrySampleSameLevelNavMesh(Vector3 center, out NavMeshHit bestHit)
+    {
+        if (NavMesh.SamplePosition(center, out bestHit, navSampleRadius, NavMesh.AllAreas))
+        {
+            if (Mathf.Abs(bestHit.position.y - player.position.y) <= maxVerticalDifference)
+                return true;
+        }
+
+        for (int i = 0; i < sameLevelSampleAttempts; i++)
+        {
+            Vector2 offset = Random.insideUnitCircle * navSampleRadius;
+
+            Vector3 candidate = center + new Vector3(offset.x, 0f, offset.y);
+            candidate.y = player.position.y;
+
+            if (!NavMesh.SamplePosition(candidate, out bestHit, navSampleRadius, NavMesh.AllAreas))
+                continue;
+
+            if (Mathf.Abs(bestHit.position.y - player.position.y) <= maxVerticalDifference)
+                return true;
+        }
+
+        return false;
     }
 
     private bool IsBlocked(Vector3 target)

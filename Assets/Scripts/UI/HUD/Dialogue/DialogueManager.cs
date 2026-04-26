@@ -38,17 +38,43 @@ public class DialogueManager : MonoBehaviour
             AudioManager.Instance.RegisterManagedLoop(voiceSource);
     }
 
-    public void PlayDialogue(DialogueData data)
+    private Coroutine dialogueRoutine;
+
+    public void PlayDialogue(DialogueData data, bool overrideCurrent = false)
     {
-        if (isPlaying) return;
-        if(data == null || data.lines == null || data.lines.Length == 0) return;
-        StartCoroutine(PlaySequence(data));
+        if (data == null || data.lines == null || data.lines.Length == 0) return;
+
+        if (isPlaying)
+        {
+            if (!overrideCurrent) return;
+            StopCurrentDialogue();
+        }
+
+        dialogueRoutine = StartCoroutine(PlaySequence(data));
+    }
+
+    public void PlayMonsterDialogue(DialogueData data)
+    {
+        PlayDialogue(data, true);
+    }
+
+    private void StopCurrentDialogue()
+    {
+        if (dialogueRoutine != null)
+            StopCoroutine(dialogueRoutine);
+
+        if (voiceSource != null)
+            voiceSource.Stop();
+
+        dialogueText.text = "";
+        canvasGroup.alpha = 0f;
+        isPlaying = false;
     }
 
     public void PlayDialogue(DialogueLine[] lines)
     {
         if (isPlaying) return;
-        StartCoroutine(PlaySequence(lines));
+        dialogueRoutine = StartCoroutine(PlaySequence(lines));
     }
 
     IEnumerator PlaySequence(DialogueData data)

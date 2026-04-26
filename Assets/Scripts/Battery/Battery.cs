@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-public class Battery : MonoBehaviour, IInteractable
+public class Battery : MonoBehaviour, IInteractable, IResettable
 {
     [Header("References")]
     [SerializeField] private Transform visual;
@@ -31,6 +31,10 @@ public class Battery : MonoBehaviour, IInteractable
     [SerializeField] private float flashOnTime = 0.06f;
     [SerializeField] private float flashOffTime = 0.08f;
     [SerializeField] private float signalIntensity = 2f;
+    
+    private Vector3 startPosition;
+    private Quaternion startRotation;
+    private bool pickedUp;
 
     private Coroutine signalRoutine;
 
@@ -55,6 +59,9 @@ public class Battery : MonoBehaviour, IInteractable
             batteryLight.enabled = false;
             batteryLight.intensity = 0f;
         }
+        
+        startPosition = transform.position;
+        startRotation = transform.rotation;
     }
     
     private void OnEnable()
@@ -76,6 +83,8 @@ public class Battery : MonoBehaviour, IInteractable
 
     private void Update()
     {
+        if (pickedUp) return;
+        
         Vector3 targetLocalPos = visualBaseLocalPos;
 
         if (isHighlighted)
@@ -155,13 +164,39 @@ public class Battery : MonoBehaviour, IInteractable
 
     public void Interact(PlayerInteract player)
     {
+        if (pickedUp) return;
+
+        pickedUp = true;
+        isHighlighted = false;
+        InteractPrompt.Instance?.Hide();
+
         player.AddBattery(1);
 
         if (pickupSounds != null && pickupSounds.Length > 0)
-        {
             AudioManager.PlaySFX(pickupSounds, transform.position);
+
+        gameObject.SetActive(false);
+    }
+    
+    public void ResetState()
+    {
+        pickedUp = false;
+        isHighlighted = false;
+
+        transform.SetPositionAndRotation(startPosition, startRotation);
+
+        if (visual != null)
+        {
+            visual.localPosition = visualBaseLocalPos;
+            visual.localRotation = Quaternion.identity;
         }
 
-        Destroy(gameObject);
+        if (batteryLight != null)
+        {
+            batteryLight.enabled = false;
+            batteryLight.intensity = 0f;
+        }
+
+        gameObject.SetActive(true);
     }
 }

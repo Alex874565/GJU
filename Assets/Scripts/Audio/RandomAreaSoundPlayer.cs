@@ -41,6 +41,10 @@ public class RandomAreaSoundPlayer : MonoBehaviour
     
     [Header("Blocked Areas")]
     [SerializeField] private Collider[] blockedAreas;
+    
+    [Header("Spawn Level")]
+    [SerializeField] private float maxSpawnVerticalDifference = 1.2f;
+    [SerializeField] private int sameLevelAttempts = 12;
 
     private Vector3 lastSoundPosition;
     private bool waitingForTurnReaction;
@@ -208,6 +212,10 @@ public class RandomAreaSoundPlayer : MonoBehaviour
 
     private bool TrySpawnMonsterNearSound()
     {
+            if (MonsterSpawnManager.Instance != null &&
+                MonsterSpawnManager.Instance.HasActiveMonster())
+                return false;
+        
         if (monsterObjects == null || monsterObjects.Length == 0)
             return false;
 
@@ -218,7 +226,7 @@ public class RandomAreaSoundPlayer : MonoBehaviour
             !MonsterSpawnManager.Instance.TryRegisterSpawn())
             return false;
 
-        if (!NavMesh.SamplePosition(lastSoundPosition, out NavMeshHit hit, navMeshSampleRadius, NavMesh.AllAreas))
+        if (!TrySampleSameLevelNavMesh(lastSoundPosition, out NavMeshHit hit))
         {
             MonsterSpawnManager.Instance?.UnregisterSpawn();
             return false;
@@ -273,12 +281,39 @@ public class RandomAreaSoundPlayer : MonoBehaviour
                     identity.FirstSeenThisRunDialogue != null &&
                     !dialogueManager.isPlaying)
                 {
-                    dialogueManager.PlayDialogue(identity.FirstSeenThisRunDialogue);
+                    dialogueManager.PlayMonsterDialogue(identity.FirstSeenThisRunDialogue);
                 }
             }
         }
         
         return true;
+    }
+    
+    private bool TrySampleSameLevelNavMesh(Vector3 center, out NavMeshHit bestHit)
+    {
+        // First try exact sound position
+        if (NavMesh.SamplePosition(center, out bestHit, navMeshSampleRadius, NavMesh.AllAreas))
+        {
+            if (Mathf.Abs(bestHit.position.y - player.position.y) <= maxSpawnVerticalDifference)
+                return true;
+        }
+
+        // Then try nearby points on the same horizontal level
+        for (int i = 0; i < sameLevelAttempts; i++)
+        {
+            Vector2 randomCircle = Random.insideUnitCircle * navMeshSampleRadius;
+
+            Vector3 candidate = center + new Vector3(randomCircle.x, 0f, randomCircle.y);
+            candidate.y = player.position.y;
+
+            if (!NavMesh.SamplePosition(candidate, out bestHit, navMeshSampleRadius, NavMesh.AllAreas))
+                continue;
+
+            if (Mathf.Abs(bestHit.position.y - player.position.y) <= maxSpawnVerticalDifference)
+                return true;
+        }
+
+        return false;
     }
     
     private GameObject GetAvailableMonster()

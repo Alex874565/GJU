@@ -3,29 +3,36 @@ using UnityEngine;
 
 public class MonsterSpawnManager : MonoBehaviour
 {
-    public static MonsterSpawnManager Instance { get; private set; }
+    [SerializeField] private int maxMonsters = 1;
+    private int activeSpawns;
 
-    public bool HasActiveMonster { get; private set; }
+    public bool TryRegisterSpawn()
+    {
+        if (activeSpawns >= maxMonsters)
+            return false;
+
+        activeSpawns++;
+        return true;
+    }
+
+    public void UnregisterSpawn()
+    {
+        activeSpawns = Mathf.Max(0, activeSpawns - 1);
+    }
+
+    public void ResetRunSeenTypes()
+    {
+        seenThisRun.Clear();
+        activeSpawns = 0;
+    }
+    
+    public static MonsterSpawnManager Instance { get; private set; }
 
     private HashSet<MonsterType> seenTypes = new();
 
     private void Awake()
     {
         Instance = this;
-    }
-
-    public bool TryRegisterSpawn()
-    {
-        if (HasActiveMonster)
-            return false;
-
-        HasActiveMonster = true;
-        return true;
-    }
-
-    public void UnregisterSpawn()
-    {
-        HasActiveMonster = false;
     }
 
     public bool IsFirstTime(MonsterType type)
@@ -39,6 +46,11 @@ public class MonsterSpawnManager : MonoBehaviour
     
     private HashSet<MonsterType> seenThisRun = new();
 
+    public bool HasActiveMonster()
+    {
+        return activeSpawns > 0;
+    }
+    
     public bool IsFirstSeenThisRun(MonsterType type)
     {
         if (seenThisRun.Contains(type))
@@ -46,10 +58,5 @@ public class MonsterSpawnManager : MonoBehaviour
 
         seenThisRun.Add(type);
         return true;
-    }
-
-    public void ResetRunSeenTypes()
-    {
-        seenThisRun.Clear();
     }
 }

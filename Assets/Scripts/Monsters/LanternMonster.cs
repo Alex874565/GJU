@@ -53,6 +53,8 @@ public class LanternMonster : MonoBehaviour, IResettable
     [SerializeField] private float frontSpawnSideRandomness = 0.8f;
     [SerializeField] private float frontSpawnVerticalOffset = 0f;
 
+    [SerializeField] private MonsterLookAtPlayer lookAtPlayer;
+    
     private bool attacking;
     private bool attacked;
     private bool isDespawning;
@@ -63,6 +65,9 @@ public class LanternMonster : MonoBehaviour, IResettable
 
     private void Awake()
     {
+        if (lookAtPlayer == null)
+            lookAtPlayer = GetComponentInChildren<MonsterLookAtPlayer>();
+        
         if (monsterVisibility == null)
             monsterVisibility = GetComponent<MonsterVisibility>();
 
@@ -111,6 +116,16 @@ public class LanternMonster : MonoBehaviour, IResettable
     {
         if (lantern != null)
             lantern.OnLanternTurnedOn -= HandleLanternTurnedOn;
+    }
+    
+    public void SpawnFromSound(Vector3 soundPosition)
+    {
+        bool warped = TrySpawnAtCameraCorner();
+
+        if (!warped)
+            WarpInFrontOfPlayer();
+
+        monsterVisual?.SetActive(false); // stays hidden until lantern turns on
     }
     
     private void HandleLanternTurnedOn()
@@ -328,6 +343,12 @@ public class LanternMonster : MonoBehaviour, IResettable
         if (isDespawning)
             yield break;
 
+        if (lookAtPlayer != null)
+        {
+            lookAtPlayer.ForceFacePlayer();
+            lookAtPlayer.enabled = false;
+        }
+        
         attacked = true;
 
         monsterVisual?.SetActive(true);
@@ -337,25 +358,25 @@ public class LanternMonster : MonoBehaviour, IResettable
 
         playerManager?.AddAnxiety(120f);
 
-        Vector3 startPos = transform.position;
-        Vector3 startCenter = startPos + Vector3.up * monsterCenterHeight;
+        Vector3 camPos = playerCamera.transform.position;
+        Vector3 camForward = playerCamera.transform.forward;
 
-        Vector3 forward = playerCamera.transform.forward;
-        forward.y = 0f;
-        forward.Normalize();
+        Vector3 startPos =
+            camPos +
+            camForward * 2.2f +
+            playerCamera.transform.right * Random.Range(-0.35f, 0.35f) +
+            playerCamera.transform.up * Random.Range(-0.15f, 0.15f);
 
-        Vector3 targetCenterPos =
-            playerCamera.transform.position + forward * stopDistanceFromCamera;
+        transform.position = startPos;
 
-        targetCenterPos.y = startCenter.y;
+        if (lookAtPlayer != null)
+        {
+            lookAtPlayer.ForceFacePlayer();
+            lookAtPlayer.enabled = false;
+        }
 
-        Vector3 overshootCenterPos =
-            playerCamera.transform.position + forward * (stopDistanceFromCamera * overshootMultiplier);
-
-        overshootCenterPos.y = startCenter.y;
-
-        Vector3 targetPos = targetCenterPos - Vector3.up * monsterCenterHeight;
-        Vector3 overshootPos = overshootCenterPos - Vector3.up * monsterCenterHeight;
+        Vector3 targetPos = camPos + camForward * stopDistanceFromCamera;
+        Vector3 overshootPos = camPos - camForward * 0.6f;
 
         float timer = 0f;
 
@@ -381,6 +402,9 @@ public class LanternMonster : MonoBehaviour, IResettable
         }
 
         yield return null;
+        
+        if (lookAtPlayer != null)
+            lookAtPlayer.enabled = true;
 
         DeactivateMonster();
     }

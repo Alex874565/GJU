@@ -36,6 +36,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DialogueData beforeFlashlightDialogue;
     [SerializeField] private DialogueData afterFlashlightDialogue;
     [SerializeField] private DialogueData[] repeatRunDialogues;
+    
+    [Header("First Room Change")]
+    [SerializeField] private DialogueData firstRoomChangeDialogue;
+    private bool playedFirstRoomChangeDialogue;
 
     [Header("Click Prompt")]
     [SerializeField] private GameObject clickPromptRoot;
@@ -183,13 +187,14 @@ public class GameManager : MonoBehaviour
                     resettables.Remove(r);
                 }
 
-            if (playerVisual != null)
-                playerVisual.SetActive(false);
+            playerVisual.SetActive(false);
 
             yield return introCutscene.PlayRoutine();
+            
+            
+            playerLook.enabled = true;
 
-            if (playerVisual != null)
-                playerVisual.SetActive(true);
+            playerVisual.SetActive(true);
             yield return new WaitForSeconds(afterCutsceneDelay);
             if (lightningManager != null)
                 lightningManager.StartLoop();
@@ -208,8 +213,11 @@ public class GameManager : MonoBehaviour
                 yield return new WaitUntil(() => !dialogueManager.isPlaying);
             }
 
-            lantern.InputLocked = false;
             yield return StartCoroutine(WaitForFlashlightClick());
+            
+            playerMovement.inputLocked = false;
+            playerManager.inputLocked = false;
+            lantern.InputLocked = false;
 
             if (afterFlashlightDialogue != null)
             {
@@ -222,6 +230,23 @@ public class GameManager : MonoBehaviour
         {
             ActivateRandomEnvironment();
 
+            bool shouldPlayFirstRoomChange =
+                !playedFirstRoomChangeDialogue &&
+                firstRoomChangeDialogue != null;
+
+            if (shouldPlayFirstRoomChange)
+            {
+                dialogueManager.PlayDialogue(firstRoomChangeDialogue);
+            }
+            else if (repeatRunDialogues != null && repeatRunDialogues.Length > 0)
+            {
+                DialogueData chosenDialogue =
+                    repeatRunDialogues[Random.Range(0, repeatRunDialogues.Length)];
+
+                if (chosenDialogue != null)
+                    dialogueManager.PlayDialogue(chosenDialogue);
+            }
+
             foreach (var r in resettables)
                 if (r != null)
                 {
@@ -232,13 +257,17 @@ public class GameManager : MonoBehaviour
                     resettables.Remove(r);
                 }
 
-            if (playerVisual != null)
-                playerVisual.SetActive(false);
+            playerVisual.SetActive(false);
 
             yield return introCutscene.PlayRoutine();
-
-            if (playerVisual != null)
-                playerVisual.SetActive(true);
+            
+            playerLook.enabled = true;
+            
+            playerVisual.SetActive(true);
+            
+            playerMovement.inputLocked = false;
+            playerManager.inputLocked = false;
+            lantern.InputLocked = false;
             
             yield return new WaitForSeconds(afterCutsceneDelay);
             if (lightningManager != null)
@@ -255,13 +284,6 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-
-        playerMovement.inputLocked = false;
-        playerManager.inputLocked = false;
-        lantern.InputLocked = false;
-
-        if (playerLook != null)
-            playerLook.enabled = true;
         
         isResetting = false;
     }
@@ -273,7 +295,9 @@ public class GameManager : MonoBehaviour
 
         if (clickPromptText != null)
             yield return StartCoroutine(TypewriterPrompt("click to turn on flashlight"));
-
+        
+        lantern.InputLocked = false;
+        
         yield return new WaitUntil(() =>
             Mouse.current != null &&
             Mouse.current.leftButton.wasPressedThisFrame);

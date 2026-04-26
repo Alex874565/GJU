@@ -12,14 +12,14 @@ public class TwitchingMonster : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private Transform visualRoot;
 
     [Header("Frame Sets")]
     [SerializeField] private FrameSet[] frameSets;
     [SerializeField] private int selectedSetIndex = 0;
     [SerializeField] private bool randomizeSetOnEnable = false;
 
-    [Header("Twitch Timing")]
+    [Header("Timing")]
+    [SerializeField] private bool continuous = true;
     [SerializeField] private float minInterval = 0.03f;
     [SerializeField] private float maxInterval = 0.12f;
 
@@ -29,55 +29,56 @@ public class TwitchingMonster : MonoBehaviour
     [SerializeField] private float minBurstDelay = 0.3f;
     [SerializeField] private float maxBurstDelay = 1.5f;
 
-    [Header("Visual Jitter Only")]
-    [SerializeField] private float positionJitter = 0.02f;
-    [SerializeField] private float rotationJitter = 3f;
-
     private Sprite[] activeFrames;
     private int currentIndex;
     private Coroutine routine;
 
-    private Vector3 baseVisualLocalPosition;
-    private Quaternion baseVisualLocalRotation;
-
     private void Awake()
     {
         if (spriteRenderer == null)
-            spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-
-        if (visualRoot == null && spriteRenderer != null)
-            visualRoot = spriteRenderer.transform;
-
-        if (visualRoot != null)
-        {
-            baseVisualLocalPosition = visualRoot.localPosition;
-            baseVisualLocalRotation = visualRoot.localRotation;
-        }
+            spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
     }
 
     private void OnEnable()
     {
         ChooseFrameSet();
 
-        if (activeFrames == null || activeFrames.Length == 0 || spriteRenderer == null)
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning($"{name}: Missing SpriteRenderer.");
             return;
+        }
+
+        if (activeFrames == null || activeFrames.Length == 0)
+        {
+            Debug.LogWarning($"{name}: No active frames assigned.");
+            return;
+        }
 
         SetFrame(0);
+
+        if (routine != null)
+            StopCoroutine(routine);
+
         routine = StartCoroutine(TwitchLoop());
     }
 
     private void OnDisable()
     {
         if (routine != null)
+        {
             StopCoroutine(routine);
-
-        ResetVisual();
+            routine = null;
+        }
     }
 
     private void ChooseFrameSet()
     {
         if (frameSets == null || frameSets.Length == 0)
+        {
+            activeFrames = null;
             return;
+        }
 
         int index = randomizeSetOnEnable
             ? Random.Range(0, frameSets.Length)
@@ -90,56 +91,49 @@ public class TwitchingMonster : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(Random.Range(minBurstDelay, maxBurstDelay));
-
-            int burstCount = Random.Range(minBurst, maxBurst + 1);
-
-            for (int i = 0; i < burstCount; i++)
+            if (continuous)
             {
                 NextFrame();
                 yield return new WaitForSeconds(Random.Range(minInterval, maxInterval));
             }
+            else
+            {
+                yield return new WaitForSeconds(Random.Range(minBurstDelay, maxBurstDelay));
 
-            ResetVisual();
+                int burstCount = Random.Range(minBurst, maxBurst + 1);
+
+                for (int i = 0; i < burstCount; i++)
+                {
+                    NextFrame();
+                    yield return new WaitForSeconds(Random.Range(minInterval, maxInterval));
+                }
+            }
         }
     }
 
     private void NextFrame()
     {
+        if (activeFrames == null || activeFrames.Length == 0 || spriteRenderer == null)
+            return;
+
         int next = Random.Range(0, activeFrames.Length);
 
-        if (next == currentIndex)
+        if (activeFrames.Length > 1 && next == currentIndex)
             next = (next + 1) % activeFrames.Length;
 
         SetFrame(next);
-
-        if (visualRoot == null) return;
-
-        Vector3 jitter = Random.insideUnitSphere * positionJitter;
-        jitter.z = 0f;
-
-        visualRoot.localPosition = baseVisualLocalPosition + jitter;
-        visualRoot.localRotation = baseVisualLocalRotation * Quaternion.Euler(
-            0f,
-            0f,
-            Random.Range(-rotationJitter, rotationJitter)
-        );
-    }
-
-    private void ResetVisual()
-    {
-        if (visualRoot == null) return;
-
-        visualRoot.localPosition = baseVisualLocalPosition;
-        visualRoot.localRotation = baseVisualLocalRotation;
     }
 
     private void SetFrame(int index)
     {
-        currentIndex = index;
+        if (activeFrames == null || index < 0 || index >= activeFrames.Length)
+            return;
 
-        if (activeFrames[index] != null)
-            spriteRenderer.sprite = activeFrames[index];
+        if (activeFrames[index] == null)
+            return;
+
+        currentIndex = index;
+        spriteRenderer.sprite = activeFrames[index];
     }
 
     public void SetFrameSet(int index)

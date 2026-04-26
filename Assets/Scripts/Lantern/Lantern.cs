@@ -354,9 +354,26 @@ public class Lantern : MonoBehaviour, IResettable
     {
         if (amount <= 0) return;
 
-        currentBatteries = Mathf.Clamp(currentBatteries + amount, 0, maxBatteries);
+        float totalBatteryTime =
+            Mathf.Max(0f, (currentBatteries - 1) * batteryDuration + currentBatteryTime);
 
-        if (currentBatteries > 0 && currentBatteryTime <= 0f)
+        totalBatteryTime += amount * batteryDuration;
+
+        float maxTotalBatteryTime = maxBatteries * batteryDuration;
+        totalBatteryTime = Mathf.Clamp(totalBatteryTime, 0f, maxTotalBatteryTime);
+
+        currentBatteries = Mathf.CeilToInt(totalBatteryTime / batteryDuration);
+
+        if (currentBatteries <= 0)
+        {
+            currentBatteries = 0;
+            currentBatteryTime = 0f;
+            return;
+        }
+
+        currentBatteryTime = totalBatteryTime - ((currentBatteries - 1) * batteryDuration);
+
+        if (currentBatteryTime <= 0f)
             currentBatteryTime = batteryDuration;
     }
 
