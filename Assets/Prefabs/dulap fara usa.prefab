@@ -318,7 +318,7 @@ MonoBehaviour:
   cameraPivot: {fileID: 0}
   playerManager: {fileID: 0}
   playerRb: {fileID: 0}
-  closetRadius: 0.18
+  closetRadius: 0.15
   transitionSpeed: 4
   closetCameraBackOffset: 0.15
   normalCameraZ: 0
@@ -431,6 +431,11 @@ MonoBehaviour:
   isLocked: 0
   openAngle: -85
   openSpeed: 5
+  sideDeadzone: 0.15
+  doorCenterPoint: {fileID: 0}
+  frontSidePoint: {fileID: 0}
+  backSidePoint: {fileID: 0}
+  invertOpenDirection: 0
   lockedDialogue: {fileID: 0}
   openSounds:
   - {fileID: 8300000, guid: fc9d0f122355c9d47b36cb7876b25c79, type: 3}
@@ -438,6 +443,57 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 18f8337f0d454a54b8f9d3ea6bfd964b, type: 3}
   lockedSounds: []
   unlockSounds: []
+  openDuration: 0.75
+  closeDuration: 0.55
+  openCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  closeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  canBeUnlocked: 1
 --- !u!64 &67422802223958765
 MeshCollider:
   m_ObjectHideFlags: 0

@@ -238,7 +238,8 @@ public class LanternMonster : MonoBehaviour, IResettable
             return 0f;
 
         AudioClip clip = despawnSounds[Random.Range(0, despawnSounds.Length)];
-        AudioManager.PlaySFX(jumpSound, playerCamera.transform.position, jumpVolume);
+
+        AudioManager.PlaySFX(clip, transform.position, despawnVolume);
 
         return clip.length;
     }
@@ -391,11 +392,6 @@ public class LanternMonster : MonoBehaviour, IResettable
         
         SetMonsterVisible(true);
         monsterVisibility?.ClearVisibility();
-
-        if (jumpSound != null)
-            AudioManager.PlaySFX(jumpSound, playerCamera.transform.position, 1.5f);
-
-        playerManager?.AddAnxiety(120f);
 
         if (lookAtPlayer != null)
             lookAtPlayer.enabled = false;
