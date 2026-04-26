@@ -55,7 +55,7 @@ public class PlayerInteract : MonoBehaviour
     {
         IInteractable newInteractable = null;
         RaycastHit bestHit = default;
-        float bestDistance = float.MaxValue;
+        float bestScore = float.MaxValue;
 
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
 
@@ -64,7 +64,7 @@ public class PlayerInteract : MonoBehaviour
             sphereRadius,
             interactDistance,
             interactMask,
-            QueryTriggerInteraction.Ignore
+            QueryTriggerInteraction.Collide
         );
 
         foreach (RaycastHit hit in hits)
@@ -77,9 +77,15 @@ public class PlayerInteract : MonoBehaviour
             if (interactable == null)
                 continue;
 
-            if (hit.distance < bestDistance)
+            MonoBehaviour mb = interactable as MonoBehaviour;
+            if (mb == null)
+                continue;
+
+            float score = Vector3.Distance(playerCamera.transform.position, mb.transform.position);
+
+            if (score < bestScore)
             {
-                bestDistance = hit.distance;
+                bestScore = score;
                 bestHit = hit;
                 newInteractable = interactable;
             }

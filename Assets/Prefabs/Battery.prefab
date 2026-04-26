@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6593994654821134434}
   - component: {fileID: 5848857797925330556}
   - component: {fileID: 7480079782359633221}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Battery
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -101,7 +101,7 @@ GameObject:
   - component: {fileID: 8972330694149282477}
   - component: {fileID: 3070345942868384548}
   - component: {fileID: 3746451157233394641}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -393,6 +393,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 517a39bc2eda08941870098279e085a0, type: 3}
       propertyPath: m_Name
       value: baterie
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 517a39bc2eda08941870098279e085a0, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

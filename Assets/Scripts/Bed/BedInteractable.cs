@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class BedInteractable : MonoBehaviour, IInteractable, IResettable
 {
@@ -10,9 +11,14 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     [SerializeField] private Transform playerTransform;
     [SerializeField] private Transform sleepPosition;
     [SerializeField] private CutscenePlayer bedCutscene;
+    [SerializeField] private GameObject playerVisual;
+    [SerializeField] private GameObject lanternVisual; // optional if separate model
 
     [Header("Settings")]
     [SerializeField] private string promptText = "Sleep";
+    
+    [SerializeField] private AudioClip endSound;
+    [SerializeField] private float endVolume = 1f;
 
     private bool used;
     private bool isHighlighted;
@@ -52,16 +58,25 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
         if (playerManager != null)
             playerManager.inputLocked = true;
 
+        playerVisual?.SetActive(false);
+        lanternVisual?.SetActive(false);
+        
         TeleportPlayerToBed();
 
         if (bedCutscene != null)
             yield return bedCutscene.PlayRoutine();
 
-        if (playerMovement != null)
-            playerMovement.inputLocked = false;
+        // 🔊 Play sound
+        float delay = 0f;
+        if (endSound != null)
+        {
+            AudioManager.PlaySFX(endSound, transform.position, endVolume);
+            delay = endSound.length;
+        }
 
-        if (playerManager != null)
-            playerManager.inputLocked = false;
+        yield return new WaitForSeconds(delay);
+
+        SceneManager.LoadScene("Credits");
     }
 
     private void TeleportPlayerToBed()
