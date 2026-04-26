@@ -13,15 +13,15 @@ MonoBehaviour:
   m_Name: GeneratorDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I can do this...
-    voiceover: {fileID: 0}
-    displayDuration: 1
-    typewriterSpeed: 0.03
-  - text: I just need to get to the garage...
+  - text: Thank god...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03
-  - text: And turn the generator back on.
+  - text: I knew all that fear was only an illusion.
     voiceover: {fileID: 0}
-    displayDuration: 1.5
+    displayDuration: 2
+    typewriterSpeed: 0.03
+  - text: Now I can finally go back to sleep.
+    voiceover: {fileID: 0}
+    displayDuration: 2
     typewriterSpeed: 0.03

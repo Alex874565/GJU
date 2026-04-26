@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform playerTransform;
     [SerializeField] private GameObject playerVisual;
     [SerializeField] private Rigidbody playerRb;
+    [SerializeField] private PlayerLook playerLook;
 
     [Header("Environment Variation")]
     [SerializeField] private GameObject[] environments;
@@ -158,11 +159,16 @@ public class GameManager : MonoBehaviour
             soundSpawner.gameObject.SetActive(true);
         
         playerManager.ResetAllStates();
-
+        
         lantern.InputLocked = true;
         playerMovement.inputLocked = true;
         playerManager.inputLocked = true;
 
+        if (playerLook != null)
+            playerLook.enabled = false; // 🔥 THIS is the missing piece
+        
+        ResetPlayerTransform();
+        
         if (runNo == 1)
         {
             ActivateRandomEnvironment();
@@ -225,8 +231,6 @@ public class GameManager : MonoBehaviour
                 {
                     resettables.Remove(r);
                 }
-            
-            ResetPlayerTransform();
 
             if (playerVisual != null)
                 playerVisual.SetActive(false);
@@ -255,6 +259,9 @@ public class GameManager : MonoBehaviour
         playerMovement.inputLocked = false;
         playerManager.inputLocked = false;
         lantern.InputLocked = false;
+
+        if (playerLook != null)
+            playerLook.enabled = true;
         
         isResetting = false;
     }

@@ -13,6 +13,8 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     [SerializeField] private CutscenePlayer bedCutscene;
     [SerializeField] private GameObject playerVisual;
     [SerializeField] private GameObject lanternVisual; // optional if separate model
+    [SerializeField] private PlayerLook playerLook;
+    [SerializeField] private Lantern lantern;
 
     [Header("Settings")]
     [SerializeField] private string promptText = "Sleep";
@@ -27,7 +29,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     {
         isHighlighted = highlighted;
 
-        if (used || playerManager == null || playerManager.AreLightsOff)
+        if (used || playerManager == null || !playerManager.AreLightsOff)
         {
             InteractPrompt.Instance?.Hide();
             return;
@@ -42,7 +44,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
     public void Interact(PlayerInteract player)
     {
         if (used) return;
-        if (playerManager != null && playerManager.AreLightsOff) return;
+        if (playerManager != null && !playerManager.AreLightsOff) return;
 
         used = true;
         InteractPrompt.Instance?.Hide();
@@ -57,6 +59,12 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
 
         if (playerManager != null)
             playerManager.inputLocked = true;
+
+        if (lantern != null)
+            lantern.InputLocked = true;
+
+        if (playerLook != null)
+            playerLook.enabled = false;
 
         playerVisual?.SetActive(false);
         lanternVisual?.SetActive(false);
@@ -89,14 +97,16 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
             playerRb.linearVelocity = Vector3.zero;
             playerRb.angularVelocity = Vector3.zero;
 
-            playerRb.position = sleepPosition.position;
-            playerRb.rotation = sleepPosition.rotation;
+            playerRb.MovePosition(sleepPosition.position);
+            playerRb.MoveRotation(sleepPosition.rotation);
         }
-
-        playerTransform.SetPositionAndRotation(
-            sleepPosition.position,
-            sleepPosition.rotation
-        );
+        else
+        {
+            playerTransform.SetPositionAndRotation(
+                sleepPosition.position,
+                sleepPosition.rotation
+            );
+        }
 
         Physics.SyncTransforms();
     }

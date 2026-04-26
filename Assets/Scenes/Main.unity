@@ -1770,6 +1770,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3738831464723995243, guid: 0d504a70cd35ddc49892e1547f4668ef, type: 3}
       insertIndex: 37
       addedObject: {fileID: 1132405160}
+    - targetCorrespondingSourceObject: {fileID: 8448066179943649890, guid: 0d504a70cd35ddc49892e1547f4668ef, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2086885725}
     - targetCorrespondingSourceObject: {fileID: 275689083174020455, guid: 0d504a70cd35ddc49892e1547f4668ef, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1489242176}
@@ -4096,6 +4099,11 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 9112576186419513560, guid: 0d504a70cd35ddc49892e1547f4668ef, type: 3}
   m_PrefabInstance: {fileID: 164010463}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &390019418 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8448066179943649890, guid: 0d504a70cd35ddc49892e1547f4668ef, type: 3}
+  m_PrefabInstance: {fileID: 164010463}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &390019422
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4112,10 +4120,12 @@ MonoBehaviour:
   playerMovement: {fileID: 356039680}
   playerRb: {fileID: 356039682}
   playerTransform: {fileID: 356039679}
-  sleepPosition: {fileID: 0}
+  sleepPosition: {fileID: 2086885725}
   bedCutscene: {fileID: 1776777703}
   playerVisual: {fileID: 1400242467}
   lanternVisual: {fileID: 2091260058}
+  playerLook: {fileID: 356039683}
+  lantern: {fileID: 1120670004}
   promptText: Sleep
   endSound: {fileID: 8300000, guid: e030480d2528a7a4eb807537883f358f, type: 3}
   endVolume: 1
@@ -6286,11 +6296,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5501fc80c48a42108a16ba84055d4c2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  runNo: 1
+  runNo: 0
   playerManager: {fileID: 356039687}
   playerTransform: {fileID: 356039679}
   playerVisual: {fileID: 1400242467}
   playerRb: {fileID: 356039682}
+  playerLook: {fileID: 356039683}
   environments:
   - {fileID: 2095860070}
   - {fileID: 932440276}
@@ -18300,6 +18311,37 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3782115670823690240, guid: 4f8e801ad6045df45a6d9e88394bb115, type: 3}
   m_PrefabInstance: {fileID: 155750142}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2086885724
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2086885725}
+  m_Layer: 0
+  m_Name: SleepPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2086885725
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2086885724}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0.66131186, z: 0, w: 0.75011104}
+  m_LocalPosition: {x: 1.0710001, y: 0.685, z: 1.067}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 390019418}
+  m_LocalEulerAnglesHint: {x: 0, y: 82.8, z: 0}
 --- !u!1 &2091260058 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2239505554007819037, guid: 10374bbff0731b84f82465eb4cd39f99, type: 3}
