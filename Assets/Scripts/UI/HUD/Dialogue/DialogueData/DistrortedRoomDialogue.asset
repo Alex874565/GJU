@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: Wait...this isn't right
-    displayDuration: 2
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03
   - text: The room is...different
+    voiceover: {fileID: 0}
     displayDuration: 2
-    typewriterSpeed: 0.04
+    typewriterSpeed: 0.03

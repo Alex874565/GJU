@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 
@@ -23,7 +24,7 @@ public class GameManager : MonoBehaviour
     [Header("Cutscenes")]
     [SerializeField] private CutscenePlayer introCutscene;
 
-    private IResettable[] resettables;
+    private List<IResettable> resettables = new List<IResettable>();
     
     [Header("Lightning")]
     [SerializeField] private LightningManager lightningManager;
@@ -33,7 +34,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DialogueData introDialogue;
     [SerializeField] private DialogueData beforeFlashlightDialogue;
     [SerializeField] private DialogueData afterFlashlightDialogue;
-    [SerializeField] private DialogueData repeatRunDialogue;
+    [SerializeField] private DialogueData[] repeatRunDialogues;
 
     [Header("Click Prompt")]
     [SerializeField] private GameObject clickPromptRoot;
@@ -46,6 +47,10 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private PlayerMovement playerMovement;
     [SerializeField] private Lantern lantern;
+    
+    [Header("Runtime Systems")]
+    [SerializeField] private RandomAreaSoundPlayer soundSpawner;
+    [SerializeField] private GameObject[] monstersToDeactivate;
 
     private Coroutine resetRoutine;
     private bool isResetting;
@@ -59,9 +64,7 @@ public class GameManager : MonoBehaviour
     
     private void Awake()
     {
-        resettables = FindObjectsOfType<MonoBehaviour>(true)
-            .OfType<IResettable>()
-            .ToArray();
+        resettables = FindObjectsOfType<MonoBehaviour>().OfType<IResettable>().ToList();
 
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
@@ -116,6 +119,28 @@ public class GameManager : MonoBehaviour
         yield return StartCoroutine(ResetGameRoutine());
     }
 
+    public void DeactivateAllMonsters()
+    {
+        MonsterSpawnManager.Instance?.UnregisterSpawn();
+
+        foreach (GameObject monster in monstersToDeactivate)
+        {
+            if (monster != null)
+                monster.SetActive(false);
+        }
+    }
+    
+    public void OnGeneratorActivated()
+    {
+        DeactivateAllMonsters();
+
+        if (soundSpawner != null)
+            soundSpawner.gameObject.SetActive(false);
+
+        if (lightningManager != null)
+            lightningManager.StopLoop(); // 🔥 stop lightning immediately
+    }
+    
     private IEnumerator ResetGameRoutine()
     {
         isResetting = true;
@@ -125,6 +150,13 @@ public class GameManager : MonoBehaviour
 
         runNo++;
 
+        MonsterSpawnManager.Instance?.ResetRunSeenTypes();
+        
+        DeactivateAllMonsters();
+
+        if (soundSpawner != null)
+            soundSpawner.gameObject.SetActive(true);
+        
         playerManager.ResetAllStates();
 
         lantern.InputLocked = true;
@@ -136,7 +168,14 @@ public class GameManager : MonoBehaviour
             ActivateRandomEnvironment();
             
             foreach (var r in resettables)
-                r.ResetState();
+                if (r != null)
+                {
+                    r.ResetState();
+                }
+                else
+                {
+                    resettables.Remove(r);
+                }
 
             if (playerVisual != null)
                 playerVisual.SetActive(false);
@@ -178,7 +217,14 @@ public class GameManager : MonoBehaviour
             ActivateRandomEnvironment();
 
             foreach (var r in resettables)
-                r.ResetState();
+                if (r != null)
+                {
+                    r.ResetState();
+                }
+                else
+                {
+                    resettables.Remove(r);
+                }
             
             ResetPlayerTransform();
 
@@ -194,11 +240,15 @@ public class GameManager : MonoBehaviour
             if (lightningManager != null)
                 lightningManager.StartLoop();
 
-            if (repeatRunDialogue != null)
+            if (repeatRunDialogues != null && repeatRunDialogues.Length > 0)
             {
-                dialogueManager.PlayDialogue(repeatRunDialogue);
-                yield return new WaitForSeconds(0.1f);
-                yield return new WaitUntil(() => !dialogueManager.isPlaying);
+                DialogueData chosenDialogue =
+                    repeatRunDialogues[Random.Range(0, repeatRunDialogues.Length)];
+
+                if (chosenDialogue != null)
+                {
+                    dialogueManager.PlayDialogue(chosenDialogue);
+                }
             }
         }
 

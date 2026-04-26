@@ -1,14 +1,9 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using UnityEngine.AI;
 
 public class MonsterTeleporter : MonoBehaviour, IResettable 
 {
-    [SerializeField] private enum MonsterType
-    {
-        Search,
-        Stalker
-    }
-    
     private Vector3 startPosition;
     private Quaternion startRotation;
 
@@ -17,7 +12,7 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
 
     [Header("References")]
     [SerializeField] private NavMeshAgent agent;
-    [SerializeField] private PlayerManager playerManager;
+    private PlayerManager playerManager;
     [SerializeField] private MonsterVisibility monsterVisibility;
 
     private Transform player;
@@ -70,11 +65,19 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     [Header("Close Anxiety")]
     [SerializeField] private float closeAnxietyRange = 2f;
     [SerializeField] private float closeAnxietyGainPerSecond = 12f;
+    
+    [Header("Despawn Audio")]
+    [SerializeField] private AudioClip[] despawnSounds;
+    [SerializeField] private float despawnVolume = 1f;
+    
+    public bool IsDespawning => isDespawning;
 
     private float teleportTimer;
 
     private void Awake()
     {
+        playerManager = FindObjectOfType<PlayerManager>();
+        
         startPosition = transform.position;
         startRotation = transform.rotation;
 
@@ -92,11 +95,20 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
 
         ResetLookAwayDelay();
     }
+    
+    private void OnEnable()
+    {
+        isDespawning = false;
+        hideTimer = 0f;
+        lookAwayTimer = 0f;
+        teleportTimer = Random.Range(teleportIntervalMin, teleportIntervalMax);
+        ResetLookAwayDelay();
+    }
 
     private void Update()
     {
-        if (player == null || agent == null)
-            return;
+        if (isDespawning) return;
+        if (player == null || agent == null) return;
 
         UpdateCloseAnxiety();
 
@@ -114,15 +126,14 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     
     private void UpdateCloseAnxiety()
     {
-        if (playerManager == null || player == null)
-            return;
+        if (isDespawning) return;
+        if (playerManager == null || player == null) return;
 
         float distance = Vector3.Distance(transform.position, player.position);
 
         if (distance <= closeAnxietyRange)
             playerManager.AddAnxiety(closeAnxietyGainPerSecond * Time.deltaTime);
     }
-
     // =========================
     // SEARCH TYPE
     // =========================
@@ -337,12 +348,40 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
     // END ENCOUNTER
     // =========================
 
+    private bool isDespawning;
     private void EndEncounter()
+    {
+        if (isDespawning) return;
+
+        isDespawning = true;
+        StartCoroutine(DespawnRoutine());
+    }
+    
+    [SerializeField] private float despawnDelay = 0.2f;
+
+    private IEnumerator DespawnRoutine()
     {
         if (playerManager != null)
             playerManager.SetEncounter(false);
 
+        float delay = PlayDespawnSound();
+
+        yield return new WaitForSeconds(delay);
+
+        MonsterSpawnManager.Instance?.UnregisterSpawn();
         gameObject.SetActive(false);
+    }
+    
+    private float PlayDespawnSound()
+    {
+        if (despawnSounds == null || despawnSounds.Length == 0)
+            return 0f;
+
+        AudioClip clip = despawnSounds[Random.Range(0, despawnSounds.Length)];
+
+        AudioManager.PlaySFX(clip, transform.position, despawnVolume);
+
+        return clip.length - .1f; // 👈 key part
     }
     
     public void ResetState()
@@ -362,6 +401,7 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
         if (monsterVisibility != null)
             monsterVisibility.ClearVisibility();
         
+        MonsterSpawnManager.Instance?.UnregisterSpawn();
         gameObject.SetActive(false);
     }
 }

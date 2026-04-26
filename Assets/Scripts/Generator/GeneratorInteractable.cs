@@ -129,6 +129,9 @@ public class GeneratorInteractable : MonoBehaviour, IInteractable, IResettable
         if (sparks != null)
             sparks.Play();
         
+        if (gameManager != null)
+            gameManager.OnGeneratorActivated();
+        
         yield return StartCoroutine(ActivationIndicatorFlicker());
         
         if (activateSound != null)

@@ -7,29 +7,30 @@ public class ClosetAreaController : MonoBehaviour
     [SerializeField] private Transform cameraPivot;
     [SerializeField] private PlayerManager playerManager;
     [SerializeField] private Rigidbody playerRb;
-    [SerializeField] private Lantern lantern;
 
     [Header("Collider Size")]
-    private float normalRadius;
     [SerializeField] private float closetRadius = 0.18f;
+    private float normalRadius;
+
     [Header("Smoothing")]
     [SerializeField] private float transitionSpeed = 8f;
-    
+
     [Header("Camera Wall Safety")]
     [SerializeField] private float closetCameraBackOffset = 0.15f;
     [SerializeField] private float normalCameraZ;
-    
+
     [Header("Closet Door")]
     [SerializeField] private DoorController closetDoor;
 
     private bool inCloset;
+    private bool wasHidden;
 
     private void Start()
     {
         if (playerCollider != null)
             normalRadius = playerCollider.radius;
     }
-    
+
     private void Update()
     {
         if (playerCollider == null || cameraPivot == null) return;
@@ -44,8 +45,6 @@ public class ClosetAreaController : MonoBehaviour
 
         UpdateHiddenState();
     }
-    
-    private bool wasHidden;
 
     private void UpdateHiddenState()
     {
@@ -63,18 +62,8 @@ public class ClosetAreaController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
-        
+
         inCloset = true;
-
-// 🔥 force lantern OFF
-        if (lantern != null)
-        {
-            //lantern.InputLocked = true;
-
-            //if (lantern.IsOn)
-                //lantern.ToggleOnOff();
-        }
-        
         UpdateHiddenState();
     }
 
@@ -84,14 +73,6 @@ public class ClosetAreaController : MonoBehaviour
 
         inCloset = false;
 
-        if (lantern != null)
-        {
-            //lantern.InputLocked = true;
-
-            //if (lantern.IsOn)
-                //lantern.ToggleOnOff();
-        }
-        
         if (wasHidden && playerManager != null)
         {
             playerManager.RegisterHiddenSource(false);

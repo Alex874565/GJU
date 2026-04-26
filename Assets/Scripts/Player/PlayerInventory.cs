@@ -1,7 +1,7 @@
 using UnityEngine;
 using System;
 
-public class PlayerInventory : MonoBehaviour
+public class PlayerInventory : MonoBehaviour, IResettable
 {
     public static PlayerInventory Instance { get; private set; }
 
@@ -24,6 +24,15 @@ public class PlayerInventory : MonoBehaviour
         Debug.Log("[PlayerInventory] Key picked up.");
     }
 
+    public void ResetState()
+    {
+        HasKey = false;
+        Debug.Log("[PlayerInventory] Reset key state.");
+
+        // Optional: notify UI to update
+        OnKeyUsed?.Invoke(); // forces UI to hide key icon if you use it that way
+    }
+    
     public bool UseKey()
     {
         if (!HasKey) return false;

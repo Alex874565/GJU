@@ -14,8 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - text: "Finally... it\u2019s back on."
-    displayDuration: 3
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03
   - text: I should go back to bed...
-    displayDuration: 3
-    typewriterSpeed: 0.04
+    voiceover: {fileID: 0}
+    displayDuration: 1
+    typewriterSpeed: 0.03
