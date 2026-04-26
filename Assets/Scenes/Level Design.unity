@@ -231,6 +231,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: baf3058eb82003b45918c8fbaed713ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioMixer: {fileID: 0}
   sfxSlider: {fileID: 1452305245}
   ambianceSlider: {fileID: 581671774}
   refreshRateDropdown: {fileID: 961558245}
@@ -1172,6 +1173,75 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 246298064}
   m_CullTransparentMesh: 1
+--- !u!1 &250699528
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 250699531}
+  - component: {fileID: 250699530}
+  - component: {fileID: 250699529}
+  m_Layer: 6
+  m_Name: Safe zone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &250699529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250699528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47877465495b9ec4a9442971769e35a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeZoneLayer:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!65 &250699530
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250699528}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.7417417, y: 2.652781, z: 1.5750791}
+  m_Center: {x: 0.008254558, y: 0.08135438, z: -0.030624747}
+--- !u!4 &250699531
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 250699528}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0.19733459, z: -0, w: 0.98033625}
+  m_LocalPosition: {x: 6.4728117, y: 1.284, z: -0.6920659}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -22.762, z: 0}
 --- !u!1 &259317685
 GameObject:
   m_ObjectHideFlags: 0
@@ -1503,6 +1573,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc7bfe5027edc854c8b3e2192a36a9ae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  voiceSource: {fileID: 0}
+  voiceVolume: 1
   dialogueText: {fileID: 953532459}
   canvasGroup: {fileID: 436609553}
   fadeInDuration: 0.4
@@ -2279,7 +2351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 846126050}
-  playerInteract: {fileID: 846126047}
+  playerManager: {fileID: 0}
   fearRiseSpeed: 2.5
   fearFallSpeed: 1.2
   bobFrequency: 0.9
@@ -3285,6 +3357,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lantern: {fileID: 1956194672}
+  gameManager: {fileID: 0}
+  lightningManager: {fileID: 0}
   anxietyGainDarkness: 3
   anxietyGainEncounter: 6
   anxietyGainSeeingMonster: 6
@@ -3308,6 +3382,8 @@ MonoBehaviour:
   maxPitchWobble: 0.08
   maxVolumeWobble: 0.12
   wobbleSpeed: 10
+  deathCutscene: {fileID: 0}
+  deathAnxietyThreshold: 100
   inputLocked: 0
 --- !u!114 &846126045
 MonoBehaviour:
@@ -3321,7 +3397,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 462c274b89c84c2da35e6f494f87b7b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerInteract: {fileID: 846126047}
+  playerManager: {fileID: 0}
   volume: {fileID: 0}
   cinemachineCamera: {fileID: 814345868}
   impulseSource: {fileID: 1418303628}
@@ -3405,13 +3481,6 @@ MonoBehaviour:
   interactMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  monsterDetectDistance: 20
-  monsterMask:
-    serializedVersion: 2
-    m_Bits: 8
-  visibilityMask:
-    serializedVersion: 2
-    m_Bits: 9
 --- !u!114 &846126048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6376,14 +6445,17 @@ MonoBehaviour:
   runNo: 0
   playerManager: {fileID: 846126044}
   playerTransform: {fileID: 846126052}
-  defaultEnvironment: {fileID: 0}
-  randomEnvironments: []
+  playerVisual: {fileID: 0}
+  playerRb: {fileID: 0}
+  environments: []
+  delayBeforeResetAfterDeath: 1.5
   introCutscene: {fileID: 2031866882}
   lightningManager: {fileID: 0}
   dialogueManager: {fileID: 0}
   introDialogue: {fileID: 0}
   beforeFlashlightDialogue: {fileID: 0}
   afterFlashlightDialogue: {fileID: 0}
+  repeatRunDialogue: {fileID: 0}
   clickPromptRoot: {fileID: 0}
   clickPromptText: {fileID: 0}
   thunderDelay: 0
@@ -10290,6 +10362,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 880227a1d4b64590894fdeff144aed7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startLoopOnStart: 0
   lightningLights:
   - {fileID: 1535826132}
   - {fileID: 190323977}
@@ -10797,6 +10870,7 @@ MonoBehaviour:
   gameplayCam: {fileID: 814345868}
   cutsceneCam: {fileID: 2057508977}
   timeline: {fileID: 1541238361}
+  cutsceneAudioSources: []
 --- !u!4 &2031866883
 Transform:
   m_ObjectHideFlags: 0
@@ -11669,3 +11743,4 @@ SceneRoots:
   - {fileID: 770925077}
   - {fileID: 1943204808}
   - {fileID: 1237505083}
+  - {fileID: 250699531}
