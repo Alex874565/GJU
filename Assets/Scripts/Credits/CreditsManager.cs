@@ -35,12 +35,17 @@ public class CreditsManager : MonoBehaviour
     {
         warningCanvasGroup.alpha = 0f;
         creditsCanvasGroup.alpha = 0f;
+        creditsCanvasGroup.gameObject.SetActive(false);
 
         yield return StartCoroutine(Fade(warningCanvasGroup, 0f, 1f, warningFadeDuration));
         yield return new WaitForSeconds(warningDisplayDuration);
+
+        AsyncOperation loadOp = SceneManager.LoadSceneAsync("Main");
+        loadOp.allowSceneActivation = false;
+
         yield return StartCoroutine(Fade(warningCanvasGroup, 1f, 0f, warningFadeDuration));
 
-        yield return StartCoroutine(PlayCreditsScroll());
+        loadOp.allowSceneActivation = true;
     }
 
     IEnumerator PlayCreditsOnly()
@@ -53,21 +58,24 @@ public class CreditsManager : MonoBehaviour
 
     IEnumerator PlayCreditsScroll()
     {
-        yield return StartCoroutine(Fade(creditsCanvasGroup, 0f, 1f, fadeInDuration));
+        creditsCanvasGroup.alpha = 1f;
+        creditsContainer.anchoredPosition = new Vector2(0f, -Screen.height);
 
-        float totalHeight = creditsContainer.rect.height + Screen.height;
+        float containerHeight = creditsContainer.rect.height;
+        float totalDistance = Screen.height + containerHeight + Screen.height;
         float elapsed = 0f;
-        float duration = totalHeight / scrollSpeed;
+        float duration = totalDistance / scrollSpeed;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            creditsContainer.anchoredPosition += Vector2.up * scrollSpeed * Time.deltaTime;
+            creditsContainer.anchoredPosition = new Vector2(
+                0f,
+                -Screen.height + (totalDistance * (elapsed / duration))
+            );
             yield return null;
         }
 
-        yield return new WaitForSeconds(endDelay);
-        yield return StartCoroutine(Fade(creditsCanvasGroup, 1f, 0f, fadeInDuration));
         SceneManager.LoadScene("Main Menu");
     }
 

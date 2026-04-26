@@ -68,7 +68,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
 
         playerVisual?.SetActive(false);
         lanternVisual?.SetActive(false);
-        
+
         TeleportPlayerToBed();
 
         if (bedCutscene != null)
@@ -84,6 +84,7 @@ public class BedInteractable : MonoBehaviour, IInteractable, IResettable
 
         yield return new WaitForSeconds(delay);
 
+        CreditsManager.showWarningNext = false;
         SceneManager.LoadScene("Credits");
     }
 
