@@ -6642,7 +6642,7 @@ MonoBehaviour:
   minRadius: 4
   maxRadius: 6
   heightOffset: 0
-  behindBiasChance: 0.8
+  behindBiasChance: 0.5
   reactionWindow: 4
   lookAngleThreshold: 25
   reactionChance: 0.45
@@ -6650,12 +6650,11 @@ MonoBehaviour:
   dialogueManager: {fileID: 1683482168}
   turnAroundDialogue: {fileID: 11400000, guid: 8e65c231432524848810486103d98a9d, type: 2}
   monsterObjects:
-  - {fileID: 1993281552}
-  - {fileID: 999204891}
   - {fileID: 964049175}
-  monsterSpawnChance: 0.35
+  monsterSpawnChance: 1
   navMeshSampleRadius: 10
-  stalkerMaxSpawnDistance: 2
+  stalkerMaxSpawnDistance: 3
+  stalkerNavSampleRadius: 3
   blockedAreas:
   - {fileID: 528503480}
   maxSpawnVerticalDifference: 1.2

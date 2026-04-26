@@ -57,6 +57,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private RandomAreaSoundPlayer soundSpawner;
     [SerializeField] private GameObject[] monstersToDeactivate;
 
+    private GameObject previousEnvironment;
+    private bool layoutChanged;
+    
     private Coroutine resetRoutine;
     private bool isResetting;
     
@@ -262,6 +265,7 @@ public class GameManager : MonoBehaviour
             ResetCurrentEnvironmentObjects();
 
             bool shouldPlayFirstRoomChange =
+                layoutChanged &&
                 !playedFirstRoomChangeDialogue &&
                 firstRoomChangeDialogue != null;
 
@@ -294,17 +298,6 @@ public class GameManager : MonoBehaviour
             yield return new WaitForSeconds(afterCutsceneDelay);
             if (lightningManager != null)
                 lightningManager.StartLoop();
-
-            if (repeatRunDialogues != null && repeatRunDialogues.Length > 0)
-            {
-                DialogueData chosenDialogue =
-                    repeatRunDialogues[Random.Range(0, repeatRunDialogues.Length)];
-
-                if (chosenDialogue != null)
-                {
-                    dialogueManager.PlayDialogue(chosenDialogue);
-                }
-            }
         }
         
         isResetting = false;
@@ -360,9 +353,12 @@ public class GameManager : MonoBehaviour
     
     private void ActivateEnvironment(GameObject environment)
     {
+        layoutChanged = currentEnvironment != null && currentEnvironment != environment;
+
         if (currentEnvironment != null)
             currentEnvironment.SetActive(false);
 
+        previousEnvironment = currentEnvironment;
         currentEnvironment = environment;
 
         if (currentEnvironment != null)

@@ -37,7 +37,8 @@ public class RandomAreaSoundPlayer : MonoBehaviour
     [SerializeField] private float navMeshSampleRadius = 6f;
     
     [Header("Stalker Spawn")]
-    [SerializeField] private float stalkerMaxSpawnDistance = 5f;
+    [SerializeField] private float stalkerMaxSpawnDistance = 3f;
+    [SerializeField] private float stalkerNavSampleRadius = 1f;
     
     [Header("Blocked Areas")]
     [SerializeField] private Collider[] blockedAreas;
@@ -271,12 +272,27 @@ public class RandomAreaSoundPlayer : MonoBehaviour
             Vector3 fromPlayer = spawnPosition - player.position;
             fromPlayer.y = 0f;
 
-            if (fromPlayer.magnitude > stalkerMaxSpawnDistance)
-            {
-                Vector3 closerPosition = player.position + fromPlayer.normalized * stalkerMaxSpawnDistance;
+            if (fromPlayer.sqrMagnitude < 0.001f)
+                fromPlayer = -player.forward;
 
-                if (NavMesh.SamplePosition(closerPosition, out NavMeshHit closerHit, navMeshSampleRadius, NavMesh.AllAreas))
+            Vector3 desiredPosition = player.position + fromPlayer.normalized * stalkerMaxSpawnDistance;
+
+            if (NavMesh.SamplePosition(desiredPosition, out NavMeshHit closerHit, stalkerNavSampleRadius, NavMesh.AllAreas))
+            {
+                float finalDistance = Vector3.Distance(closerHit.position, player.position);
+
+                if (finalDistance <= stalkerMaxSpawnDistance + 0.25f)
                     spawnPosition = closerHit.position;
+                else
+                {
+                    MonsterSpawnManager.Instance?.UnregisterSpawn();
+                    return false;
+                }
+            }
+            else
+            {
+                MonsterSpawnManager.Instance?.UnregisterSpawn();
+                return false;
             }
         }
 
