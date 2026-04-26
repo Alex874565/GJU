@@ -21,6 +21,8 @@ public class DialogueManager : MonoBehaviour
 
     public bool isPlaying = false;
 
+    private bool persistentMonsterDialogue;
+    
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -40,6 +42,39 @@ public class DialogueManager : MonoBehaviour
 
     private Coroutine dialogueRoutine;
 
+    public void PlayMonsterDialoguePersistent(DialogueData data)
+    {
+        if (data == null || data.lines == null || data.lines.Length == 0) return;
+
+        StopCurrentDialogue();
+
+        persistentMonsterDialogue = true;
+        dialogueRoutine = StartCoroutine(PlayPersistentMonsterDialogue(data));
+    }
+    
+    private IEnumerator PlayPersistentMonsterDialogue(DialogueData data)
+    {
+        isPlaying = true;
+
+        DialogueLine line = data.lines[0];
+
+        dialogueText.text = "";
+        yield return StartCoroutine(FadeCanvas(0f, 1f, fadeInDuration));
+        yield return StartCoroutine(Typewrite(line));
+
+        while (persistentMonsterDialogue)
+            yield return null;
+
+        yield return StartCoroutine(FadeCanvas(1f, 0f, fadeOutDuration));
+        dialogueText.text = "";
+        isPlaying = false;
+    }
+    
+    public void StopMonsterDialogue()
+    {
+        persistentMonsterDialogue = false;
+    }
+    
     public void PlayDialogue(DialogueData data, bool overrideCurrent = false)
     {
         if (data == null || data.lines == null || data.lines.Length == 0) return;
@@ -69,6 +104,7 @@ public class DialogueManager : MonoBehaviour
         dialogueText.text = "";
         canvasGroup.alpha = 0f;
         isPlaying = false;
+        persistentMonsterDialogue = false;
     }
 
     public void PlayDialogue(DialogueLine[] lines)

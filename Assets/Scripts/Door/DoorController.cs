@@ -42,6 +42,9 @@ public class DoorController : MonoBehaviour, IInteractable
     private Quaternion closedRotation;
     private Quaternion openRotation;
 
+    [Header("Lock Settings")]
+    [SerializeField] private bool canBeUnlocked = true;
+    
     private void Start()
     {
         if (player == null)
@@ -58,6 +61,8 @@ public class DoorController : MonoBehaviour, IInteractable
         if (isOpen)
             transform.localRotation = openRotation;
     }
+    
+    
     
     private Quaternion GetOpenRotationAwayFromPlayer()
     {
@@ -96,6 +101,12 @@ public class DoorController : MonoBehaviour, IInteractable
     {
         if (isLocked)
         {
+            if (!canBeUnlocked)
+            {
+                PlayLockedFeedback();
+                return;
+            }
+
             if (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey)
             {
                 PlayerInventory.Instance.UseKey();
@@ -108,16 +119,21 @@ public class DoorController : MonoBehaviour, IInteractable
             }
             else
             {
-                if (lockedSounds != null && lockedSounds.Length > 0)
-                    AudioManager.PlaySFX(lockedSounds, transform.position);
-
-                DialogueManager.Instance?.PlayDialogue(lockedDialogue);
+                PlayLockedFeedback();
             }
 
             return;
         }
 
         ToggleDoor();
+    }
+
+    private void PlayLockedFeedback()
+    {
+        if (lockedSounds != null && lockedSounds.Length > 0)
+            AudioManager.PlaySFX(lockedSounds, transform.position);
+
+        DialogueManager.Instance?.PlayDialogue(lockedDialogue);
     }
 
     public void ToggleDoor()

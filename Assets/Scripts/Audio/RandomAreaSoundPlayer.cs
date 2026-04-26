@@ -281,7 +281,7 @@ public class RandomAreaSoundPlayer : MonoBehaviour
                     identity.FirstSeenThisRunDialogue != null &&
                     !dialogueManager.isPlaying)
                 {
-                    dialogueManager.PlayMonsterDialogue(identity.FirstSeenThisRunDialogue);
+                    dialogueManager.PlayMonsterDialoguePersistent(identity.FirstSeenThisRunDialogue);
                 }
             }
         }

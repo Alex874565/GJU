@@ -15,5 +15,5 @@ MonoBehaviour:
   lines:
   - text: Hide and let it pass, it's just an illusion...
     voiceover: {fileID: 0}
-    displayDuration: 2
+    displayDuration: 4
     typewriterSpeed: 0.03

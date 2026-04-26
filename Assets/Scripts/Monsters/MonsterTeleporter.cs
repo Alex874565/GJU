@@ -391,7 +391,8 @@ public class MonsterTeleporter : MonoBehaviour, IResettable
         float delay = PlayDespawnSound();
 
         yield return new WaitForSeconds(delay);
-
+        
+        DialogueManager.Instance?.StopMonsterDialogue();
         MonsterSpawnManager.Instance?.UnregisterSpawn();
         gameObject.SetActive(false);
     }

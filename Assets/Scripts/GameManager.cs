@@ -63,13 +63,17 @@ public class GameManager : MonoBehaviour
     private bool mouseClicked = false;
 
     private GameObject currentEnvironment;
+
+    private List<IResettable> persistentResettables = new List<IResettable>();
     
     private Vector3 initialPlayerPosition;
     private Quaternion initialPlayerRotation;
     
     private void Awake()
     {
-        resettables = FindObjectsOfType<MonoBehaviour>().OfType<IResettable>().ToList();
+        resettables = FindObjectsOfType<MonoBehaviour>()
+            .OfType<IResettable>()
+            .ToList();
 
         if (clickPromptRoot != null)
             clickPromptRoot.SetActive(false);
@@ -82,6 +86,39 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         ResetGame();
+    }
+    
+    private void ResetGlobalObjects()
+    {
+        foreach (MonoBehaviour mb in FindObjectsOfType<MonoBehaviour>(true))
+        {
+            if (mb is not IResettable resettable)
+                continue;
+
+            if (IsInsideAnyEnvironment(mb.transform))
+                continue;
+
+            resettable.ResetState();
+        }
+    }
+
+    private void ResetCurrentEnvironmentObjects()
+    {
+        if (currentEnvironment == null) return;
+
+        foreach (IResettable resettable in currentEnvironment.GetComponentsInChildren<IResettable>(true))
+            resettable.ResetState();
+    }
+
+    private bool IsInsideAnyEnvironment(Transform t)
+    {
+        foreach (GameObject env in environments)
+        {
+            if (env != null && t.IsChildOf(env.transform))
+                return true;
+        }
+
+        return false;
     }
     
     private void ResetPlayerTransform()
@@ -175,17 +212,9 @@ public class GameManager : MonoBehaviour
         
         if (runNo == 1)
         {
+            ResetGlobalObjects();
             ActivateRandomEnvironment();
-            
-            foreach (var r in resettables)
-                if (r != null)
-                {
-                    r.ResetState();
-                }
-                else
-                {
-                    resettables.Remove(r);
-                }
+            ResetCurrentEnvironmentObjects();
 
             playerVisual.SetActive(false);
 
@@ -228,7 +257,9 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            ResetGlobalObjects();
             ActivateRandomEnvironment();
+            ResetCurrentEnvironmentObjects();
 
             bool shouldPlayFirstRoomChange =
                 !playedFirstRoomChangeDialogue &&
@@ -236,6 +267,7 @@ public class GameManager : MonoBehaviour
 
             if (shouldPlayFirstRoomChange)
             {
+                playedFirstRoomChangeDialogue = true;
                 dialogueManager.PlayDialogue(firstRoomChangeDialogue);
             }
             else if (repeatRunDialogues != null && repeatRunDialogues.Length > 0)
@@ -246,16 +278,6 @@ public class GameManager : MonoBehaviour
                 if (chosenDialogue != null)
                     dialogueManager.PlayDialogue(chosenDialogue);
             }
-
-            foreach (var r in resettables)
-                if (r != null)
-                {
-                    r.ResetState();
-                }
-                else
-                {
-                    resettables.Remove(r);
-                }
 
             playerVisual.SetActive(false);
 
@@ -288,6 +310,19 @@ public class GameManager : MonoBehaviour
         isResetting = false;
     }
 
+    private void ResetAllObjects()
+    {
+        resettables = FindObjectsOfType<MonoBehaviour>()
+            .OfType<IResettable>()
+            .ToList();
+
+        for (int i = resettables.Count - 1; i >= 0; i--)
+        {
+            if (resettables[i] != null)
+                resettables[i].ResetState();
+        }
+    }
+    
     IEnumerator WaitForFlashlightClick()
     {
         if (clickPromptRoot != null)

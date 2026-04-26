@@ -15,6 +15,9 @@ public class LockedDoor : MonoBehaviour, IInteractable
     [SerializeField] private AudioClip[] closeSounds;
     [SerializeField] private AudioClip[] lockedSounds;
     [SerializeField] private AudioClip[] unlockSounds;
+    
+    [Header("Lock Settings")]
+    [SerializeField] private bool canBeUnlocked = true;
 
     private bool isHighlighted;
     private bool isOpen;
@@ -45,6 +48,17 @@ public class LockedDoor : MonoBehaviour, IInteractable
 
     private void TryOpen()
     {
+        // 🚫 Door cannot ever be unlocked
+        if (!canBeUnlocked)
+        {
+            if (lockedSounds != null && lockedSounds.Length > 0)
+                AudioManager.PlaySFX(lockedSounds, transform.position);
+
+            DialogueManager.Instance?.PlayDialogue(lockedDialogue);
+            return;
+        }
+
+        // 🔓 Normal unlock behavior
         if (unlocked || (PlayerInventory.Instance != null && PlayerInventory.Instance.HasKey))
         {
             if (!unlocked)

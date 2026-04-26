@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: LightMonsterDialogue
   m_EditorClassIdentifier: 
   lines:
-  - text: I should turn my lantern off and face the darkness...
+  - text: I should turn off my lantern and embrace the darkness...
     voiceover: {fileID: 0}
     displayDuration: 1.5
     typewriterSpeed: 0.03
-  - text: I have to embrace it.
+  - text: I should turn off my lantern
     voiceover: {fileID: 0}
-    displayDuration: 1.5
+    displayDuration: 2
     typewriterSpeed: 0.03

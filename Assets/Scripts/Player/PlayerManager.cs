@@ -139,6 +139,8 @@ public class PlayerManager : MonoBehaviour
     
     private IEnumerator DeathRoutine()
     {
+        DialogueManager.Instance?.StopMonsterDialogue();
+        
         isDead = true;
         inputLocked = true;
 
@@ -230,8 +232,12 @@ public class PlayerManager : MonoBehaviour
 
     public void AddAnxiety(float amount)
     {
+        if (isDead) return;
+
         currentAnxiety += amount;
         currentAnxiety = Mathf.Clamp(currentAnxiety, 0f, 100f);
+
+        CheckDeath();
     }
     
     private void UpdateHeartbeatAudio()
